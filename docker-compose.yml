@@ -1,0 +1,41 @@
+services:
+  honk:
+    build: .
+    environment:
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+      - POSTGRES_DB      
+      - POSTGRES_HOST
+      - API_ADDRESS
+      - API_NETWORK
+    depends_on:
+      pgsql:
+        condition: service_healthy
+    volumes:
+      - api_sockets:/sockets
+  pgsql:
+    image: postgres:15.3-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    environment:
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - API_ADDRESS
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  nginx:
+    image: nginx:1.25.1-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "./certs:/etc/nginx/certs:ro"
+      - api_sockets:/sockets
+volumes:
+  api_sockets:
+  db_data:

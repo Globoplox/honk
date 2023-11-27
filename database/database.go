@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"log"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 )
 
 type databaseError struct {
@@ -35,7 +37,7 @@ func (handle *Handle) Close() {
 
 type migration struct {
 	Name string
-	Execute func(context.Context, *pgxpool.Pool) error
+	Execute func(context.Context, *pgx.Tx) error
 }
 
 var migrations = [...]migration {
@@ -78,7 +80,8 @@ func New(ctx context.Context, url string) (*Handle, error) {
     	CREATE TABLE IF NOT EXISTS migrations (
       		id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
       		name TEXT NOT NULL,
-      		finished_at TIMESTAMPZ NOT NULL DEFAULT now()
+      		finished_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		)
   	`)
 	if err != nil {
 		dbpool.Close()
@@ -94,16 +97,37 @@ func New(ctx context.Context, url string) (*Handle, error) {
 
 	for ; migrations_count < len(migrations); migrations_count++ {
 		var to_run = migrations[migrations_count]
-		err = to_run.Execute(ctx, dbpool)
+
+		log.Printf("Starting transaction %s", to_run.Name)
+
+		transaction, err := dbpool.Begin(ctx)
 		if err != nil {
+			dbpool.Close()
+			return nil, databaseError { fmt.Sprintf("Opening transaction failed"), err }
+		}
+	
+		err = to_run.Execute(ctx, &transaction)		
+		if err != nil {
+			transaction.Rollback(ctx)
 			dbpool.Close()
 			return nil, databaseError { fmt.Sprintf("Running migration '%s' failed", to_run.Name), err }
 		}
-		_, err = dbpool.Exec(ctx, "INSERT INTO migrations (name) VALUES ($1)", to_run.Name)
+		
+		_, err = transaction.Exec(ctx, "INSERT INTO migrations (name) VALUES ($1)", to_run.Name)
 		if err != nil {
+			transaction.Rollback(ctx)
 			dbpool.Close()
 			return nil, databaseError { fmt.Sprintf("Could not insert migrations '%s' ", to_run.Name), err }
 		}
+
+		err = transaction.Commit(ctx)
+		if err != nil {
+			transaction.Rollback(ctx)
+			dbpool.Close()
+			return nil, databaseError { fmt.Sprintf("Commiting migration '%s' failed", to_run.Name), err }
+		}
+
+		log.Printf("Finished transaction %s", to_run.Name)
 	}
 	
 	return &Handle{dbpool}, nil

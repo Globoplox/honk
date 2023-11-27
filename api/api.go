@@ -21,7 +21,6 @@ func (err apiError) Error() string {
 	} else {
 		return fmt.Sprintf("Api error: %s", err.message)
 	}
-
 }
 
 func (err apiError) Unwrap() error {
@@ -75,7 +74,11 @@ func NewFromEnv() (*Api, error) {
 	router := http.NewServeMux()
 	server := http.Server{ Handler: router }
 
-	return &Api{ db, &server, &listener, router }, nil
+	handle := &Api{ db, &server, &listener, router }
+
+	handle.registerAllRoutes()
+
+	return handle, nil
 }
 
 func (handle *Api) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request, *Api)) {

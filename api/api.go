@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"fmt"
+	"log"
 	"os"
 	"context"
 	"errors"
@@ -37,6 +38,16 @@ type Api struct {
 func (handle *Api) Close() {
 	handle.server.Shutdown(context.Background()) // Why the hell does it need context ? Should I care ? Looks into it
 	handle.Db.Close()
+}
+
+type loggerHandler struct {
+	router *http.ServeMux
+}
+
+func (handler loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Request Start '%s'", r.URL)
+	handler.router.ServeHTTP(w, r)
+	log.Printf("Request Ended '%s'", r.URL)
 }
 
 func (handle *Api) Start() error {
@@ -72,7 +83,8 @@ func NewFromEnv() (*Api, error) {
 	}
 
 	router := http.NewServeMux()
-	server := http.Server{ Handler: router }
+	logger := loggerHandler { router }
+	server := http.Server{ Handler: logger }
 
 	handle := &Api{ db, &server, &listener, router }
 

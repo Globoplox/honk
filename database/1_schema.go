@@ -27,8 +27,8 @@ func migration1Schema(ctx context.Context, t *pgx.Tx) error {
 		 	user_id UUID REFERENCES users NOT NULL,
 			name BYTEA NOT NULL,
 		  	data BYTEA NOT NULL,
-			created_at TIMESTAMPTZ NOT NULL DEAFULT now(),
-			updated_at TIMESTAMPTZ NOT NULL DEAFULT now()
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 	  	)
 	`)
 	

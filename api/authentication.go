@@ -19,7 +19,7 @@ func Authenticate(a *Api, w http.ResponseWriter, r *http.Request) *string {
 	}
 
 	var id, password_hash *string
-	err := a.Db.Pool.QueryRow(r.Context(), "SELECT id, password FROM user WHERE name = $1", u).Scan(&id, &password_hash)
+	err := a.Db.Pool.QueryRow(r.Context(), "SELECT id, password FROM users WHERE name = $1", u).Scan(&id, &password_hash)
 	
 	if err != nil {
 		log.Printf("Database error during authentication: '%v'", err)

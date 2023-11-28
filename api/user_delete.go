@@ -9,4 +9,15 @@ func userDelete(w http.ResponseWriter, r *http.Request, a *Api) {
 	if userId == nil {
 		return
 	}
+
+	// Backup passwords if possible => user email
+	
+	_, err := a.Db.Pool.Exec(r.Context(), "DELETE FROM users WHERE id = $1", userId)
+	if err != nil {
+		ServerError(w, r, apiError { "Could not delete user", err })
+		return 
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	return
 }

@@ -1,0 +1,23 @@
+{
+    "manifest_version": 2,
+    "name": "Honk",
+    "version": "1.0",
+  
+    "description": "A silly goose that keep your secrets",
+  
+    "icons": {
+      "48": "icons/honk-48.png",
+      "96": "icons/honk-96.png"
+    },
+
+    "permissions": ["clipboardWrite", "storage", "webRequest", "https://honk.lan/*"],
+
+    "browser_action": {
+        "default_icon": "icons/honk-32.png",
+        "default_title": "Honk",
+        "default_popup": "honk.html"
+    },
+
+    "web_accessible_resources": []
+  }
+  

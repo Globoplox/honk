@@ -40,13 +40,24 @@ func (handle *Api) Close() {
 	handle.Db.Close()
 }
 
-type loggerHandler struct {
+type wrapperHandler struct {
 	router *http.ServeMux
 }
 
-func (handler loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Request Start '%s'", r.URL)
-	handler.router.ServeHTTP(w, r)
+func (handler wrapperHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Request Start '%s' '%s'", r.Method, r.URL)
+	origin := r.Header.Get("Origin")
+	if len(origin) != 0 {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Vary", "Origin")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, PATCH, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		if r.Method != http.MethodOptions {
+			handler.router.ServeHTTP(w, r)
+		}
+	} else {
+		handler.router.ServeHTTP(w, r)
+	}
 	log.Printf("Request Ended '%s'", r.URL)
 }
 
@@ -82,9 +93,10 @@ func NewFromEnv() (*Api, error) {
 		return nil, apiError { "Could not open the API socket", err }
 	}
 
+	// Todo: drop it entierly, this is pure crap
 	router := http.NewServeMux()
-	logger := loggerHandler { router }
-	server := http.Server{ Handler: logger }
+	wrapper := wrapperHandler { router }
+	server := http.Server{ Handler: wrapper }
 
 	handle := &Api{ db, &server, &listener, router }
 

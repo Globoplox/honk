@@ -18,6 +18,6 @@ func userDelete(w http.ResponseWriter, r *http.Request, a *Api) {
 		return 
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusNoContent)
 	return
 }

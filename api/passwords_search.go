@@ -30,6 +30,7 @@ func passwordsSearch(w http.ResponseWriter, r *http.Request, a *Api) {
 		ORDER BY tags_match_score(tags, $2) DESC
 		LIMIT 10
 	`, userId, terms)
+	// Todo: should also scan password name.
 
 	if err != nil {
 		ServerError(w, r, apiError { "Could not search password", err })

@@ -56,8 +56,7 @@ func userCreate(w http.ResponseWriter, r *http.Request, a *Api) {
 		return
 	}
 
-	// TODO Ban stupid passwords 
-	// TODO Check name uniqueness
+	// TODO Manualy check name uniqueness for nice error
 
 	password_hash, err := bcrypt.GenerateFromPassword([]byte(*input.Password), bcrypt.DefaultCost)
 	if err != nil {

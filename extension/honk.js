@@ -7,19 +7,27 @@ const tags = document.getElementById("tags");
 const results = document.getElementById("result-content");
 const errors = document.getElementById("error-content");
 const status = document.getElementById("status");
+const config_section = document.getElementById("config-section");
+
 let headers = {};
 const storage = browser.storage.local;
 let identity = undefined;
 let version = undefined;
 
-function display_status() {
+Collapse.init();
+
+function display_status(startup) {
   console.log(version, identity);
-  if (version !== undefined && identity !== undefined)
+  if (version !== undefined && identity !== undefined) {
     status.innerText = `🆗 Ready`;
-  else if (version !== undefined)
+    Collapse.collapse(config_section);
+  }
+  else if (version !== undefined) {
     status.innerText = `⚠️ Not Authorized`;
-  else 
+  }
+  else {
     status.innerText = `❌ Not Connected`;
+  }
 }
 
 function host_changed() {
@@ -40,10 +48,12 @@ function host_changed() {
     else {
       errors.innerText = "Could not fetch the version";
       display_status();
+      Collapse.expend(config_section);
     }
   }).catch(response => {
     errors.innerText = "Could not fetch the version";
     display_status();
+    Collapse.expend(config_section);
   });
 }
 
@@ -63,17 +73,19 @@ function identity_changed() {
     else {
       errors.innerText = "Could not login";
       display_status();
+      Collapse.expend(config_section);
     } 
   }).catch(response => {
     errors.innerText = "Could not fetch the version";
     display_status();
+    Collapse.expend(config_section);
   });
 }
 
 storage.get("host").then(value => { 
     if (value.host != undefined) {
         host.value = value.host;
-        host_changed(value.host);
+        host_changed();
     }
 });
 

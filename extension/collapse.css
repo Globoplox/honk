@@ -1,0 +1,13 @@
+ul.collapsible {
+    list-style-type: none;
+}
+
+ul.collapsible li .collapsible-body {
+    overflow: hidden;
+    max-height: 1000px;
+    transition: max-height 0.5s;
+}
+
+ul.collapsible li.collapsed .collapsible-body {
+    max-height: 0px;
+}

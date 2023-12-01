@@ -2,6 +2,7 @@ package api
 
 func (a *Api) registerAllRoutes() {
 	a.HandleFunc("/", RouteNotFound)
+	a.HandleFunc("/version", versionHandler)
 	a.HandleFunc("/user/", userHandler)
 	a.HandleFunc("/user", userHandler)
 	a.HandleFunc("/user/self/", selfHandler)

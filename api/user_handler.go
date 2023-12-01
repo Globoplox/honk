@@ -8,6 +8,8 @@ import (
 
 func selfHandler(w http.ResponseWriter, r *http.Request, a *Api) {
 	switch r.Method {
+	case http.MethodGet:
+		userGet(w, r, a)
 	case http.MethodDelete:
 		userDelete(w, r, a)
 	case http.MethodPut:

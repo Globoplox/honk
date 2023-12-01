@@ -6,19 +6,48 @@
   </head>
   <body>
     <div id="popup-content">
-      <label for="host">Host:</label>
-      <input id="host" type="text" name="host"/>
-      <label for="username">Username:</label>
-      <input id="username" type="text" name="username"/>
-      <label for="password">Password:</label>
-      <input id="password" type="password" name="password"/>
-      <label for="tags">Search:</label>
-      <input id="tags" type="text" name="tags"/>
+      <ul class="collapsible padding-top-24">
+        <li>
+          <div id="configuration-header" class="collapsible-header">
+            <div class="flex-row spread">
+              <h4>Configuration</h4>
+              <p id="status"></p>      
+            </div>
+          </div>
+          <div class="collapsible-body">
+            
+            <div class="field padding-top-16">
+              <label for="host">Host:</label>
+              <input id="host" type="text" name="host"/>  
+            </div>
+      
+            <div class="field padding-top-16">
+              <label for="username">Username:</label>
+              <input id="username" type="text" name="username"/>  
+            </div>
+            
+            <div class="field padding-top-16">
+              <label for="password">Password:</label>
+              <input id="password" type="password" name="password"/>
+            </div>
+
+          </div>
+        </li>
+      </ul>
+
+      
+     
+      <div class="field padding-top-16">
+        <label for="tags">Search:</label>
+        <input id="tags" type="text" name="tags"/>  
+      </div>
+
       <div id="result-content">
       </div>
     </div>
     <div id="error-content">
     </div>
+    <script src="crypto.js"></script>
     <script src="honk.js"></script>
   </body>
 </html>

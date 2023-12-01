@@ -6,51 +6,111 @@ const password = document.getElementById("password");
 const tags = document.getElementById("tags");
 const results = document.getElementById("result-content");
 const errors = document.getElementById("error-content");
+const status = document.getElementById("status");
 let headers = {};
 const storage = browser.storage.local;
+let identity = undefined;
+let version = undefined;
 
-function authorize() {
-    headers["Authorization"] = `Basic ${btoa(`${username.value}:${password.value}`)}`;
+function display_status() {
+  console.log(version, identity);
+  if (version !== undefined && identity !== undefined)
+    status.innerText = `🆗 Ready`;
+  else if (version !== undefined)
+    status.innerText = `⚠️ Not Authorized`;
+  else 
+    status.innerText = `❌ Not Connected`;
 }
-headers["Content-Type"] = "zfaezfazf";
+
+function host_changed() {
+  version = undefined;
+  identity = undefined;
+  if (host.value == "") {
+    display_status();
+    return
+  }
+  fetch(`${host.value}/version`, {mode: "cors"}).then(response => {
+    if (response.ok)
+      response.text().then(data => { 
+        version = data;
+        display_status();
+        if (username.value != "" && password.value != "")
+          identity_changed();
+      });
+    else {
+      errors.innerText = "Could not fetch the version";
+      display_status();
+    }
+  }).catch(response => {
+    errors.innerText = "Could not fetch the version";
+    display_status();
+  });
+}
+
+function identity_changed() {
+  identity = undefined;
+  if (version == undefined || username.value == "" || password.value == "") {
+    display_status();
+    return
+  }
+  headers["Authorization"] = `Basic ${btoa(`${username.value}:${password.value}`)}`;
+  fetch(`${host.value}/user/self`, {headers, mode: "cors"}).then(response => {
+    if (response.ok)
+      response.json().then(data => { 
+        identity = data;
+        display_status();
+      });
+    else {
+      errors.innerText = "Could not login";
+      display_status();
+    } 
+  }).catch(response => {
+    errors.innerText = "Could not fetch the version";
+    display_status();
+  });
+}
 
 storage.get("host").then(value => { 
-    if (value.host != undefined)
+    if (value.host != undefined) {
         host.value = value.host;
+        host_changed(value.host);
+    }
 });
+
+host.onchange = (e) => { 
+    storage.set({host: host.value});
+    if (host != "")
+        host_changed(e);
+};
 
 storage.get("username").then(value => { 
     if (value.username != undefined) {
         username.value = value.username;
-        authorize();
+        identity_changed();
     }
 });
 
 storage.get("password").then(value => {
     if (value.password != undefined) {
         password.value = value.password;
-        authorize();
+        identity_changed();
     }
 });
 
-host.onchange = (e) => { 
-    storage.set({host: host.value});
-};
-
 username.onchange = (e) => { 
     storage.set({username: username.value});
-    authorize();
+    identity_changed();
 };
 
 password.onchange = (e) => { 
     storage.set({password: password.value});
-    headers["Authorization"] = `Basic ${btoa(`${username.value}:${password.value}`)}`;
-    authorize();
+    identity_changed();
 };
 
+
 tags.onchange = (e) => {
-    console.log(JSON.stringify(headers));
-    fetch(`${host.value}/passwords?${tags.value}`, {headers, mode: "cors"}).then(response => {
+    console.log(JSON.stringify(headers)); // i removed mode: cors recently
+    fetch(`${host.value}/passwords?${tags.value}`, {headers}).then(response => {
         if (response.ok)
             response.json().then(data => results.replaceChildren(data.map(render_entry)));
         else 
@@ -61,66 +121,6 @@ tags.onchange = (e) => {
 // Todo Create user button
 // Todo prehash password before sending, do it safely ig
 
-function derive_key(password, salt) {
-    return crypto.subtle.importKey(
-        "raw", 
-        password, 
-        "PBKDF2", 
-        false, 
-        ["deriveBits", "deriveKey"]
-    ).then(key => {
-        return crypto.subtle.deriveKey(
-            {
-              name: "PBKDF2",
-              salt,
-              iterations: 100000,
-              hash: "SHA-256",
-            },
-            key,
-            { name: "AES-GCM", length: 256 },
-            true,
-            ["encrypt", "decrypt"],
-        );
-    })
-}
-
-function encrypt(text, password) {
-    const data = new TextEncoder().encode(text);
-    const iv = window.crypto.getRandomValues(new Uint8Array(16));
-    const salt = window.crypto.getRandomValues(new Uint8Array(16));
-    
-    return derive_key( 
-        new TextEncoder().encode(password),
-        salt
-    ).then(aes_key => {
-        return crypto.subtle.decrypt({ name: "AES-GCM", iv }, aes_key, data);
-    }).then(cipher => {
-        return JSON.stringify({
-            data: new TextDecoder().decode(cipher), 
-            iv: new TextDecoder().decode(iv), 
-            salt: new TextDecoder().decode(salt)
-        });
-    });;
-}
-
-function decrypt(cipher, password) {
-    const {data, iv, salt} = JSON.parse(cipher);
-
-    return derive_key(
-        new TextEncoder().encode(password), 
-        new TextEncoder().encode(salt)
-    ).then(aes_key => {
-        return crypto.subtle.decrypt(
-            {   name: "AES-GCM", 
-                iv: new TextEncoder().encode(iv) }, 
-            key, 
-            cipher
-        ).then(text => {
-            return new TextDecoder().decode(text); 
-        });
-    });
-}
-
 function save_password(id, data) {
 
 }
@@ -130,12 +130,12 @@ function remove_password(id) {
 }
 
 function render_entry(entry) {
-    const container = createElement("div");
-    const name = createElement("input");
-    const tags = createElement("input");
-    const data = createElement("textarea");
-    const edit = createElement("button");
-    const remove = createElement("button");
+    const container = document.createElement("div");
+    const name = document.createElement("input");
+    const tags = document.createElement("input");
+    const data = document.createElement("textarea");
+    const edit = document.createElement("button");
+    const remove = document.createElement("button");
     let deciphered = false;
 
     name.value = entry.name;

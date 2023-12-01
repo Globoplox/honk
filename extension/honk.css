@@ -1,20 +1,101 @@
 :root {
     --main-text-color: #1a1f36;
     --background-color: #ffffff;
+    --accent-color: #5469d4;
+    --border-radius: 4px;
     --font: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Ubuntu, sans-serif;
 }
 
 * {
     color: rgb(var(--main-text-color));
     font-family: var(--font);
-  }
+    box-sizing: border-box;
+    margin-top: 0;
+    margin-bottom: 0;
+}
   
-  body {
+body {
     background-color: rgb(var(--background-color));
     width: 384px;
     height: 512px;
+}
+
+.field {
+    margin: auto;
+    width: 90%;
+}
+
+input {
+    font-size: 16px;
+    line-height: 28px;
+    padding: 8px 16px;
+    width: 100%;
+    border: unset;
+    outline-color: var(--accent-color);
+    background-color: rgb(var(--background-color));
+    border-radius: var(--border-radius);
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+        rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+        rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+        rgba(60, 66, 87, 0.16) 0px 0px 0px 1px,
+        rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+        rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+        rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+}
+
+ul.collapsible {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    list-style-type: none;
+}
+
+.collapsible-header:before {
+    margin-top: auto;
+    margin-bottom: auto;
+    content: '⬇️';
+    float: left;
+    margin-left: 8px;
+    margin-right: 16px;
   }
 
-  .hidden {
+.collapsible ul li {
+    width: 100%;
+}
+
+.hidden {
     display: none;
-  }
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.spread {
+    justify-content: space-between;
+}
+
+.padding-top-8 {
+    padding-top: 8px;
+}
+
+.padding-top-16 {
+    padding-top: 16px;
+}
+
+.padding-top-24 {
+    padding-top: 24px;
+}
+
+.padding-bottom-8 {
+    padding-bottom: 8px;
+}
+
+.padding-bottom-16 {
+    padding-bottom: 16px;
+}
+
+.padding-bottom-24 {
+    padding-bottom: 24px;
+}

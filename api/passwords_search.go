@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type passwordOutput struct {
+type passwordSearchOutput struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
 	Tags []string `json:"tags"`
@@ -38,10 +38,10 @@ func passwordsSearch(w http.ResponseWriter, r *http.Request, a *Api) {
 	}
 
 	defer rows.Close()
-	passwords := make([]passwordOutput, 0)
+	passwords := make([]passwordSearchOutput, 0)
 
 	for rows.Next() {
-	  p := passwordOutput{}
+	  p := passwordSearchOutput{}
 	  var created time.Time 
 	  var updated time.Time 
 	  err := rows.Scan(

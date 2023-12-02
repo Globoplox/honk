@@ -27,7 +27,7 @@ body {
     width: 90%;
 }
 
-input {
+input, textarea, button {
     font-size: 16px;
     line-height: 28px;
     padding: 8px 16px;
@@ -43,6 +43,13 @@ input {
         rgba(0, 0, 0, 0) 0px 0px 0px 0px,
         rgba(0, 0, 0, 0) 0px 0px 0px 0px,
         rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+}
+
+button {
+    font-weight: 400;
+    cursor: pointer;
+    width: 40%;
+    background-color: rgb(var(--accent-color));
 }
 
 #popup-content > * {
@@ -61,6 +68,10 @@ hr {
 
 .collapsible ul li {
     width: 100%;
+}
+
+.collapse-button {
+    padding-right: 24px;
 }
 
 .section {
@@ -92,6 +103,10 @@ hr {
 
 .spread {
     justify-content: space-between;
+}
+
+.start {
+    justify-content: start;
 }
 
 .padding-top-8 {

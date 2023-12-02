@@ -1,14 +1,9 @@
 const Collapse = (function () {
-    function initialize_collapsible(root) {
-        const header = root.querySelector(".collapsible-header");
-        const body = root.querySelector(".collapsible-body");
-        header.onclick = _ => {
-            root.classList.toggle("collapsed");
-        };
-    }
     
     function init() {
+        console.log("Init collapse");
         const elements = document.querySelectorAll(".collapsible li");
+        console.log(elements);
         for (let i = 0; i < elements.length; i++) {
             elements[i].querySelector(".collapsible-header").onclick = _ => {
                 elements[i].classList.toggle("collapsed");
@@ -30,4 +25,3 @@ const Collapse = (function () {
 
     return {init, collapse, expend, toggle};
 })();
-

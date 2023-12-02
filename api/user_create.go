@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
 type userCreateInput struct {
@@ -51,18 +52,19 @@ func userCreate(w http.ResponseWriter, r *http.Request, a *Api) {
 		return
 	}
 
-	if len(*input.Password) > 70 {
-		BadParameter(w, r, "password", "must be at most 70 characters")
-		return
-	}
-
 	// TODO Manualy check name uniqueness for nice error
+	log.Printf("CREATE PASSWORD %v", *input.Password)
+	log.Printf("P SIZE: %v", len(*input.Password))
 
 	password_hash, err := bcrypt.GenerateFromPassword([]byte(*input.Password), bcrypt.DefaultCost)
+
+	log.Printf("STORED HASH: %s", password_hash)
+
 	if err != nil {
 		ServerError(w, r, apiError { "Could not hash password", err })
 		return
 	}
+
 
 	_, err = a.Db.Pool.Exec(r.Context(), "INSERT INTO users (name, password, email) VALUES ($1, $2, $3)", input.Name, password_hash, input.Email)
 	if err != nil {

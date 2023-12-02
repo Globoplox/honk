@@ -25,7 +25,7 @@ func passwordHandler(w http.ResponseWriter, r *http.Request, a *Api) {
 			RouteNotFound(w, r, a)
 			return
 		}
-		passwordDelete(w, r, a, p[1])
+		passwordDelete(w, r, a, p[2])
 	
 	case http.MethodPut:
 		p := strings.Split(r.URL.Path, "/")
@@ -33,7 +33,7 @@ func passwordHandler(w http.ResponseWriter, r *http.Request, a *Api) {
 			RouteNotFound(w, r, a)
 			return
 		}
-		passwordUpdate(w, r, a, p[1])
+		passwordUpdate(w, r, a, p[2])
 	
 	default:
 		MethodNotAllowed(w, r)

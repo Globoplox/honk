@@ -53,12 +53,8 @@ func userCreate(w http.ResponseWriter, r *http.Request, a *Api) {
 	}
 
 	// TODO Manualy check name uniqueness for nice error
-	log.Printf("CREATE PASSWORD %v", *input.Password)
-	log.Printf("P SIZE: %v", len(*input.Password))
 
 	password_hash, err := bcrypt.GenerateFromPassword([]byte(*input.Password), bcrypt.DefaultCost)
-
-	log.Printf("STORED HASH: %s", password_hash)
 
 	if err != nil {
 		ServerError(w, r, apiError { "Could not hash password", err })

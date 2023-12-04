@@ -1,5 +1,25 @@
 console.log("Honk honk");
 
+// TODO design:
+/*
+search body results is a list of collapsible
+header is the name with short tags.
+body is the form as it is rn
+
+config tab is at bottom, focused if error / empty
+
+bigger ui
+
+better picto for the collapse/expend button
+cursor type on header
+
+backgournd color for focus on opened header (wave anim on click ?)
+
+disabled/enabled button style
+
+*/
+
+
 const host = document.getElementById("host");
 const username = document.getElementById("username");
 const password = document.getElementById("password");
@@ -24,7 +44,6 @@ Collapse.init();
 /* Configuration*/
 
 function display_status(startup) {
-  console.log(version, identity);
   if (version !== undefined && identity !== undefined) {
     status.innerText = `🆗 Ready`;
     Collapse.collapse(config_section);
@@ -40,18 +59,20 @@ function display_status(startup) {
 function host_changed() {
   version = undefined;
   identity = undefined;
+
   if (host.value == "") {
     display_status();
     return
   }
-  fetch(`${host.value}/version`, {mode: "cors"}).then(response => {
+
+  fetch(`https://${host.value}/version`).then(response => {
     if (response.ok)
       response.text().then(data => { 
         version = data;
         display_status();
         if (username.value != "" && password.value != "")
           identity_changed();
-      });
+      })
     else {
       errors.innerText = "Could not fetch the version";
       display_status();
@@ -86,8 +107,8 @@ function identity_changed() {
   }
 
   prehash(username.value, "HONK HONK", password.value).then(prehashed => {
-    headers["Authorization"] = `Basic ${btoa(`${username.value}:${prehashed}`)}`;
-    fetch(`${host.value}/user/self`, {headers, mode: "cors"}).then(response => {
+  headers["Authorization"] = `Basic ${btoa(`${username.value}:${prehashed}`)}`;
+  fetch(`https://${host.value}/user/self`, {headers, mode: "cors"}).then(response => {
       if (response.ok)
         response.json().then(data => { 
           identity = data;
@@ -106,12 +127,23 @@ function identity_changed() {
   });
 }
 
-storage.get("host").then(value => { 
-    if (value.host != undefined) {
-        host.value = value.host;
-        host_changed();
-    }
-});
+Promise.all([
+  storage.get("host").then(value => { 
+    if (value.host != undefined)
+      host.value = value.host;
+  }),
+  storage.get("username").then(value => { 
+    if (value.username != undefined)
+      username.value = value.username;
+  
+  }),
+  storage.get("password").then(value => {
+    if (value.password != undefined)
+      password.value = value.password;
+  })
+]).then(_ => host_changed())
+
+
 
 host.onchange = (e) => { 
     storage.set({host: host.value});
@@ -119,19 +151,6 @@ host.onchange = (e) => {
         host_changed(e);
 };
 
-storage.get("username").then(value => { 
-    if (value.username != undefined) {
-        username.value = value.username;
-        identity_changed();
-    }
-});
-
-storage.get("password").then(value => {
-    if (value.password != undefined) {
-        password.value = value.password;
-        identity_changed();
-    }
-});
 
 username.onchange = (e) => { 
     storage.set({username: username.value});
@@ -143,11 +162,10 @@ password.onchange = (e) => {
     identity_changed();
 };
 
-/* Search reocrds */
+/* Search records */
 
 tags.onchange = (e) => {
-    console.log(JSON.stringify(headers)); // i removed mode: cors recently
-    fetch(`${host.value}/passwords?${tags.value}`, {headers}).then(response => {
+    fetch(`https://${host.value}/passwords?${tags.value}`, {headers}).then(response => {
         if (response.ok) {
             response.json().then(data => results.replaceChildren(...(data.map(render_entry))) );
         } else 
@@ -170,6 +188,7 @@ function render_entry(entry) {
     const name = document.createElement("input");
     const tags = document.createElement("input");
     const data = document.createElement("textarea");
+    const actions =  document.createElement("div");
     const edit = document.createElement("button");
     const remove = document.createElement("button");
     let deciphered = false;
@@ -181,7 +200,10 @@ function render_entry(entry) {
     edit.disabled = true;
     remove.innerText = "Remove";
 
-    container.replaceChildren(name, tags, data, edit, remove);
+    actions.classList.add("flex-row")
+    actions.classList.add("spread")
+    actions.replaceChildren(edit, remove);
+    container.replaceChildren(name, tags, data, actions);
     
     const onchange = event => {
         edit.disabled = false;
@@ -212,6 +234,8 @@ function render_entry(entry) {
         });
     };
 
+    container.classList.add("record-entry");
+
     return container;
 };
 
@@ -230,15 +254,13 @@ new_record_tags.onchange = new_record_change;
 
 create_record_button.onclick = event => {
   create_record_status.innerText = `....`; // LOADER
-  console.log("hello A")
   encrypt(new_record_data.value, password.value).then(data => {
-    console.log("hello B")
     const body = {
       name: new_record_name.value,
       tags: new_record_tags.value.split(" "),
       data
     };
-    fetch(`${host.value}/password`, {method: "POST", headers, body: JSON.stringify(body)}).then(response => {
+    fetch(`https://${host.value}/password`, {method: "POST", headers, body: JSON.stringify(body)}).then(response => {
       if (response.ok)
         create_record_status.innerText = `🆗 created`;
       else 

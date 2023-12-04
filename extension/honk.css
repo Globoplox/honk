@@ -30,7 +30,7 @@ body {
 input, textarea, button {
     font-size: 16px;
     line-height: 28px;
-    padding: 8px 16px;
+    padding: 8px;
     width: 100%;
     border: unset;
     outline-color: var(--accent-color);
@@ -107,6 +107,15 @@ hr {
 
 .start {
     justify-content: start;
+}
+
+.record-entry {
+    margin: auto;
+    width: 90%;
+}
+
+.record-entry > * {
+    margin-top: 16px;
 }
 
 .padding-top-8 {

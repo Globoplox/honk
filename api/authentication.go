@@ -18,7 +18,6 @@ func Authenticate(a *Api, w http.ResponseWriter, r *http.Request) *string {
 		return nil
 	}
 
-
 	var id, password_hash *string
 	err := a.Db.Pool.QueryRow(r.Context(), "SELECT id, password FROM users WHERE name = $1", u).Scan(&id, &password_hash)
 	
@@ -33,11 +32,6 @@ func Authenticate(a *Api, w http.ResponseWriter, r *http.Request) *string {
 		Unauthorized(w, r)
 		return nil
 	}
-
-	log.Printf("AUTHENTICATE COMPARE WITH HASH %s", *password_hash)
-	log.Printf("P SIZE: %v", len(p))
-	log.Printf("AUTHENTICATE PASSWORD %s", p)
-
 
 	err = bcrypt.CompareHashAndPassword([]byte(*password_hash), []byte(p))
 	if err != nil {

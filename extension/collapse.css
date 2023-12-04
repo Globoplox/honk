@@ -11,3 +11,7 @@ ul.collapsible li .collapsible-body {
 ul.collapsible li.collapsed .collapsible-body {
     max-height: 0px;
 }
+
+.collapse-button {
+    cursor: pointer;
+}

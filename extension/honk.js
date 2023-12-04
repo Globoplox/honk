@@ -28,6 +28,7 @@ const results = document.getElementById("result-content");
 const errors = document.getElementById("error-content");
 const status = document.getElementById("status");
 const config_section = document.getElementById("config-section");
+const search_section = document.getElementById("search-section");
 const new_record_name = document.getElementById("new-record-name");
 const new_record_tags = document.getElementById("new-record-tags");
 const new_record_data = document.getElementById("new-record-data");
@@ -39,7 +40,6 @@ let identity = undefined;
 let version = undefined;
 
 Collapse.init();
-
 
 /* Configuration*/
 
@@ -85,10 +85,12 @@ function host_changed() {
   });
 }
 
-// Prehash the password, so it never reach the server. Salt and pepper.
-// Needed since this client use the same password for symetryc encryption and account login.
-// Raw buffer get completely fucked by various shitty unicode or base64 implem
-// so hexing it. Still allowed by a shitty bcrypt implem
+/*
+ * Prehash the password, so it never reach the server. Salt and pepper.
+ * Needed since this client use the same password for symetryc encryption and account login.
+ * Raw buffer get completely fucked by various shitty unicode or base64 implem
+ * so hexing it. Still allowed by a shitty bcrypt implem
+*/
 function prehash(salt, pepper, password) {
   return crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${salt}${pepper}${password}`))
   .then(prehash => {
@@ -143,14 +145,11 @@ Promise.all([
   })
 ]).then(_ => host_changed())
 
-
-
 host.onchange = (e) => { 
     storage.set({host: host.value});
     if (host != "")
         host_changed(e);
 };
-
 
 username.onchange = (e) => { 
     storage.set({username: username.value});
@@ -167,13 +166,16 @@ password.onchange = (e) => {
 tags.onchange = (e) => {
     fetch(`https://${host.value}/passwords?${tags.value}`, {headers}).then(response => {
         if (response.ok) {
-            response.json().then(data => results.replaceChildren(...(data.map(render_entry))) );
+            response.json().then(data => { 
+              results.replaceChildren(...(data.map(render_entry)));
+              // Re-init after adding elements.
+              Collapse.init();
+              Collapse.expend(search_section);
+            });
         } else 
             response.json().then(data => {errors.innerHtml = data.error; });      
     });
 };
-
-// Todo prehash password before sending, do it safely ig
 
 function save_password(id, data) {
 
@@ -184,7 +186,11 @@ function remove_password(id) {
 }
 
 function render_entry(entry) {
-    const container = document.createElement("div");
+    const container = document.createElement("li");
+    const header = document.createElement("div");
+    const text_name = document.createElement("div");
+    const text_tags = document.createElement("div");
+    const body = document.createElement("div");
     const name = document.createElement("input");
     const tags = document.createElement("input");
     const data = document.createElement("textarea");
@@ -193,6 +199,8 @@ function render_entry(entry) {
     const remove = document.createElement("button");
     let deciphered = false;
 
+    text_name.innerText = entry.name;
+    text_tags.innerText = entry.tags.join(' ');
     name.value = entry.name;
     tags.value = entry.tags.join(' ');
     data.value = "Deciphering....";
@@ -200,10 +208,18 @@ function render_entry(entry) {
     edit.disabled = true;
     remove.innerText = "Remove";
 
+    container.classList.add("collapsed");
+    header.classList.add("collapsible-header");
+    header.classList.add("collapse-button");
+    body.classList.add("collapsible-body");
+
     actions.classList.add("flex-row")
     actions.classList.add("spread")
     actions.replaceChildren(edit, remove);
-    container.replaceChildren(name, tags, data, actions);
+    
+    header.replaceChildren(text_name, text_tags);
+    body.replaceChildren(name, tags, data, actions);
+    container.replaceChildren(header, body);
     
     const onchange = event => {
         edit.disabled = false;
@@ -212,7 +228,7 @@ function render_entry(entry) {
     name.onchange = onchange;
     tags.onchange = onchange;
 
-    decrypt(entry.data, password.value).then(text => {
+    Crypto.decrypt(entry.data, password.value).then(text => {
         data.value = text; 
         data.onchange = onchange;
         deciphered = true;
@@ -220,7 +236,7 @@ function render_entry(entry) {
 
     edit.onclick = event => {
         if (deciphered) {
-            encrypt(data.value, password.value).then(data => {
+            Crypto.encrypt(data.value, password.value).then(data => {
                 save_password(entry.id, {data, name: name.values, tags: tags.value.split(' ')});
             });
         } else {
@@ -234,11 +250,8 @@ function render_entry(entry) {
         });
     };
 
-    container.classList.add("record-entry");
-
     return container;
 };
-
 
 /* Create new records */
 
@@ -254,7 +267,7 @@ new_record_tags.onchange = new_record_change;
 
 create_record_button.onclick = event => {
   create_record_status.innerText = `....`; // LOADER
-  encrypt(new_record_data.value, password.value).then(data => {
+  Crypto.encrypt(new_record_data.value, password.value).then(data => {
     const body = {
       name: new_record_name.value,
       tags: new_record_tags.value.split(" "),

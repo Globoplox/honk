@@ -9,63 +9,26 @@
     <div id="popup-content">
       <ul class="collapsible">
         
-        <li id="config-section" class="section collapsed">
-          <div class="collapsible-header section-header">
-              <div class="flex-row spread">
-                <div class="flex-row start">
-                  <span class="collapse-button">⬇️</span>
-                  <h4>Configuration</h4>
-                </div>
-                <p id="status"></p>
-            </div>
-          </div>
-
-          <div id="config-body" class="collapsible-body">            
-            <div class="field">
-              <label for="host">Host:</label>
-              <input id="host" type="text" name="host"/>  
-            </div>
-      
-            <div class="field padding-top-16">
-              <label for="username">Username:</label>
-              <input id="username" type="text" name="username"/>  
-            </div>
-            
-            <div class="field padding-top-16 padding-bottom-16">
-              <label for="password">Password:</label>
-              <input id="password" type="password" name="password"/>
-            </div>
-
-          </div>
-        </li>
-
-        <hr/>
-        
         <li id="search-section" class="section collapsed">
           <div class="collapsible-header section-header">              
               <div class="flex-row start">
                 <span class="collapse-button">⬇️</span>
-                <h4>Records</h4>
+                <input id="tags" type="text" name="tags" placeholder="Search"/>  
             </div>
           </div>
           <div id="search-body" class="collapsible-body">
-            <div class="field">
-              <label for="tags">Search:</label>
-              <input id="tags" type="text" name="tags"/>  
-            </div>
-            <div id="result-content" class="padding-bottom-16">
-            </div>      
+            <ul id="result-content" class="padding-bottom-16 collapsible">
+            </ul>
           </div>
         </li>
 
         <hr/>
 
-
         <li id="create-section" class="section collapsed">
-          <div class="collapsible-header section-header">              
+          <div class="collapsible-header section-header">
               <div class="flex-row start">
                 <span class="collapse-button">⬇️</span>
-                <h4>New Record</h4>
+                <h4 class="collapse-button">New Record</h4>
             </div>
           </div>
     
@@ -87,6 +50,38 @@
 
             <div class="flex-row start padding-top-16 padding-bottom-16">
               <button id="create-record-button">Save</button><span id="create-record-status"></span>
+            </div>
+
+          </div>
+        </li>
+
+        <hr/>
+
+        <li id="config-section" class="section collapsed">
+          <div class="collapsible-header section-header">
+              <div class="flex-row spread">
+                <div class="flex-row start">
+                  <span class="collapse-button">⬇️</span>
+                  <h4 class="collapse-button">Configuration</h4>
+                </div>
+                <p id="status"></p>
+            </div>
+          </div>
+
+          <div id="config-body" class="collapsible-body">            
+            <div class="field">
+              <label for="host">Host:</label>
+              <input id="host" type="text" name="host"/>  
+            </div>
+      
+            <div class="field padding-top-16">
+              <label for="username">Username:</label>
+              <input id="username" type="text" name="username"/>  
+            </div>
+            
+            <div class="field padding-top-16 padding-bottom-16">
+              <label for="password">Password:</label>
+              <input id="password" type="password" name="password"/>
             </div>
 
           </div>

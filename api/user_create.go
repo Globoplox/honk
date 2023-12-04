@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 )
 
 type userCreateInput struct {

@@ -1,25 +1,5 @@
 console.log("Honk honk");
 
-// TODO design:
-/*
-search body results is a list of collapsible
-header is the name with short tags.
-body is the form as it is rn
-
-config tab is at bottom, focused if error / empty
-
-bigger ui
-
-better picto for the collapse/expend button
-cursor type on header
-
-backgournd color for focus on opened header (wave anim on click ?)
-
-disabled/enabled button style
-
-*/
-
-
 const host = document.getElementById("host");
 const username = document.getElementById("username");
 const password = document.getElementById("password");
@@ -34,10 +14,30 @@ const new_record_tags = document.getElementById("new-record-tags");
 const new_record_data = document.getElementById("new-record-data");
 const create_record_button = document.getElementById("create-record-button");
 const create_record_status = document.getElementById("create-record-status");
+const no_result_found = document.getElementById("no-result-found");
+
 let headers = {};
 const storage = browser.storage.local;
 let identity = undefined;
 let version = undefined;
+
+function prefill() {
+  browser.tabs.query({currentWindow: true, active: true}).then(tabs => {
+    if (tabs && tabs.length > 0) {
+      const url = new URL(tabs[0].url);
+      if (url.hostname) {
+        const parts = url.hostname.split(".");
+        if (!parts[parts.length - 1] != "lan")
+          parts.pop(); // Remove TLD unless it's lan.
+        new_record_name.value = parts.join("-");
+        new_record_tags.value = parts.join(" ");
+        tags.value = parts.join(" ");
+        if (tags.onchange)
+          tags.onchange();
+      }
+    }
+  });  
+}
 
 Collapse.init();
 
@@ -115,6 +115,7 @@ function identity_changed() {
         response.json().then(data => { 
           identity = data;
           display_status();
+          prefill();
         });
       else {
         errors.innerText = "Could not login";
@@ -164,12 +165,21 @@ password.onchange = (e) => {
 /* Search records */
 
 tags.onchange = (e) => {
-    fetch(`https://${host.value}/passwords?${tags.value}`, {headers}).then(response => {
+    fetch(`https://${host.value}/passwords?search=${tags.value}`, {headers}).then(response => {
         if (response.ok) {
             response.json().then(data => { 
-              results.replaceChildren(...(data.map(render_entry)));
-              // Re-init after adding elements.
-              Collapse.init();
+              if (data.length == 0) {
+                results.replaceChildren(no_result_found);
+              } else {
+                const childrens = data.map(render_entry);
+                results.replaceChildren(...childrens);
+                // Re-init after adding elements.
+                Collapse.init();
+                if (childrens.length == 1) {
+                  // If there is only one result, expend it
+                  Collapse.expend(childrens[0]); 
+                }
+              }
               Collapse.expend(search_section);
             });
         } else 
@@ -182,9 +192,22 @@ function save_password(id, data) {
 }
 
 function remove_password(id) {
-
+  fetch(`https://${host.value}/password/${id}`, {method: "DELETE", headers}).then(response => {
+    if (response.ok) {
+      // Some kind of ui validation that it worked
+      const existing = document.getElementById(`search-password-${id}`);
+      if (existing)
+        existing.remove();
+    } else 
+      response.json().then(data => {
+        errors.innerText = `❌ ${data.error}`;
+      });      
+  }).catch(error => {
+    errors.innerText = error;
+  });
 }
 
+// A dash of JSX would be nice but overkill.
 function render_entry(entry) {
     const container = document.createElement("li");
     const header = document.createElement("div");
@@ -209,6 +232,8 @@ function render_entry(entry) {
     remove.innerText = "Remove";
 
     container.classList.add("collapsed");
+    container.id = `search-password-${entry.id}`;
+    body.classList.add("padding-bottom-8");
     header.classList.add("collapsible-header");
     header.classList.add("collapse-button");
     body.classList.add("collapsible-body");
@@ -256,7 +281,7 @@ function render_entry(entry) {
 /* Create new records */
 
 function new_record_change() {
-  if (new_record_name.value == "" || new_record_tags.value == "")
+  if (new_record_name.value == "" || new_record_tags.value == "" || new_record_data.value == "")
     create_record_button.disabled = true;
   else
     create_record_button.disabled = false;
@@ -264,6 +289,7 @@ function new_record_change() {
 
 new_record_name.onchange = new_record_change;
 new_record_tags.onchange = new_record_change;
+new_record_data.onchange = new_record_change;
 
 create_record_button.onclick = event => {
   create_record_status.innerText = `....`; // LOADER

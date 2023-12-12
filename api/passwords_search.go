@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+	"strconv"
+	"slices"
 )
 
 type passwordSearchOutput struct {
@@ -23,14 +25,47 @@ func passwordsSearch(w http.ResponseWriter, r *http.Request, a *Api) {
 	}
 
 	terms := strings.Split(r.URL.Query().Get("search"), ",")
+	terms = slices.DeleteFunc(terms, func(term string) bool {
+        return term == ""
+    })
+
+	page_param := r.URL.Query().Get("page")
+	page := 0
+	if page_param != "" {
+		page, err := strconv.Atoi(page_param)
+		if err != nil {
+			BadParameter(w, r, "page", "Must be an integer")
+			return 
+		}
+		if page < 1 {
+			BadParameter(w, r, "page", "Must be higher than 0")
+			return 
+		}
+		page = page - 1
+	}
+	offset := page * 10
+
 	rows, err := a.Db.Pool.Query(r.Context(), `
 		SELECT id, name, tags, data, created_at, updated_at
 		FROM passwords
 		WHERE user_id = $1
-		ORDER BY tags_match_score(tags, $2) DESC
+			AND CASE
+				WHEN ARRAY_LENGTH($2::varchar[], 1) IS NOT NULL
+					THEN tags_match_score(tags, $2) > 0
+				ELSE TRUE
+			END
+		ORDER BY CASE
+			WHEN ARRAY_LENGTH($2::varchar[], 1) IS NOT NULL 
+				THEN tags_match_score(tags, $2)
+			ELSE EXTRACT(EPOCH FROM created_at)
+		END
+		DESC
+		OFFSET $3
 		LIMIT 10
-	`, userId, terms)
+	`, userId, terms, offset)
 	// Todo: should also scan password name.
+	// Note: SQL annoyingness forces me to repeat the 'expensive' tags_match_score call.
+	// Hopefully optimizer catch it.
 
 	if err != nil {
 		ServerError(w, r, apiError { "Could not search password", err })

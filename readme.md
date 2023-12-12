@@ -23,6 +23,8 @@ It involves:
 ## Todo
 - Api user email field
 - Api user update
+- Search pagination
+- Empty search for all
 
 ## Usage
 

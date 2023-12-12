@@ -9,7 +9,7 @@ func migration1Schema(ctx context.Context, t *pgx.Tx) error {
 	// Large name because email as name are good, but enforcing them is not always.
 	// Password is a bcrypt hash obviously. 
 	_, err := (*t).Exec(ctx, `
-		CREATE TABLE users (
+		CREATE TABLE IF NOT EXISTS users (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 			name VARCHAR(200) NOT NULL UNIQUE,
 			password VARCHAR(60) NOT NULL,
@@ -25,7 +25,7 @@ func migration1Schema(ctx context.Context, t *pgx.Tx) error {
 	// As far as I know, there are no practical ciphering or hash algorithm that 
 	// allows searching.
 	_, err = (*t).Exec(ctx, `
-	  	CREATE TABLE passwords (
+	  	CREATE TABLE IF NOT EXISTS passwords (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 		 	user_id UUID REFERENCES users NOT NULL,
 			name VARCHAR NOT NULL,
@@ -39,7 +39,7 @@ func migration1Schema(ctx context.Context, t *pgx.Tx) error {
 		return err
 	}
 
-	_, err = (*t).Exec(ctx, "CREATE EXTENSION fuzzystrmatch")
+	_, err = (*t).Exec(ctx, "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch")
 	if err != nil {
 		return err
 	}

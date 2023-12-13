@@ -1,21 +1,23 @@
 # Honk
 
-Honk, like a goose
-A KISS personal password manager, by me for me.
+Honk, like a goose.
+A KISS personal password manager, by me for me.  
+Not meant to be taken too seriously. This is a small pet project 
+and pretext for learning the basics of golang and looking at web extensions.  
+
 It must:
   - Allow to save and retrieve passwords
   - On all my devices
-  - Safely, without risk of interception
+  - Securely
   - With a good availability
-  - With the lowest possible risk of loosing my passwords
+  - With a low risk risk of loosing my passwords
   - Easy and cheap to host
+
 Done because current offer of password manager is unstaisfying, it's easy, invlovle interesting topics (availablity and data safekeep) that I will have a personal intereset in pursuing.
 It'a good opportunity to use/learn new technologies that I have an interest in.
 
- You shouldn't use it seriously. It's just a less good synced keepass with extra steps.
-
 It involves:
-  - Go written api (I want to learn go)
+  - Golang written api (I want to learn go)
   - The upkeep it needs (reverse proxy, database, ops tooling)
   - The hosting (my own physical server, dns, tls certs)
   - Browser extension that works on mobile
@@ -23,21 +25,24 @@ It involves:
 ## Todo
 - Api user email field
 - Api user update
+- Api user create
 - Search pagination
-- Empty search for all
+
+### Todo for fun
+- JSX and nicer extension bundling
+- Idiomatic golang
+- Better file structure despite go 
 
 ## Usage
 
 Its not done yet, so who knows.
-Also:
-> You shouldn't use it seriously. It's just a less good synced keepass with extra steps.  
 
 ## Deployment
 
 ### Docker
 
 This is for development or testing, not production. Running in production will require addition tinkering to make is safe and practical.  
-Run the interactive script `setup.sh` once to bootstrap certificates and dns to your taste.  This is required only once.  
+Run the interactive script `setup.sh` once to bootstrap certificates and dns to your taste. This is required only once. 
 It assumes you're running it on a up to date archlinux based system.
 
 Then run `docker-compose --env-file env.local up --build` to start everything.
@@ -55,5 +60,5 @@ Here is what the setup script does, that you will need or want to do manually:
 
 ## Manual
 
-Not yet. Probably never, you can figure it out yourself.
-If you cant you're not responsible enough to mindfully use a makeshift password manager found on internet.
+You can figure it out yourself.
+The requirment can be found easely by looking at the docker-compose file and env.local.template .

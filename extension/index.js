@@ -1,3 +1,11 @@
+import * as Collapse from "./collapse";
+import * as Crypto from "./crypto";
+
+function test() {
+  return <div class="supaire" id="idk" ><span>a</span><h2>uuu</h2></div>;
+}
+
+console.log(test());
 console.log("Honk honk");
 
 const host = document.getElementById("host");
@@ -25,6 +33,7 @@ function prefill() {
   browser.tabs.query({currentWindow: true, active: true}).then(tabs => {
     if (tabs && tabs.length > 0) {
       const url = new URL(tabs[0].url);
+
       if (url.hostname) {
         const parts = url.hostname.split(".");
         if (!parts[parts.length - 1] != "lan")
@@ -32,8 +41,7 @@ function prefill() {
         new_record_name.value = parts.join("-");
         new_record_tags.value = parts.join(" ");
         tags.value = parts.join(" ");
-        if (tags.onchange)
-          tags.onchange();
+        tags?.onchange();
       }
     }
   });  

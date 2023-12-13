@@ -1,6 +1,6 @@
-# Honk
+# Honk :duck: :swan:
 
-Honk, like a goose.
+Honk, like a goose. ![A plain black goose shaped logo](extension/icons/honk-32.png)  
 A KISS personal password manager, by me for me.  
 Not meant to be taken too seriously. This is a small pet project 
 and pretext for learning the basics of golang and looking at web extensions.  
@@ -23,15 +23,15 @@ It involves:
   - Browser extension that works on mobile
 
 ## Todo
-- Api user email field
-- Api user update
-- Api user create
-- Search pagination
+- [ ] Api user email field
+- [ ] Api user update
+- [ ] Api user create
+- [ ] Search pagination
 
 ### Todo for fun
-- JSX and nicer extension bundling
-- Idiomatic golang
-- Better file structure despite go 
+- [ ] JSX and nicer extension bundling
+- [ ] Idiomatic golang
+- [ ] Better file structure despite go 
 
 ## Usage
 

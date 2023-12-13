@@ -1,4 +1,4 @@
-package api
+package web
 
 func (a *Api) registerAllRoutes() {
 	a.HandleFunc("/", RouteNotFound)

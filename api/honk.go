@@ -1,7 +1,7 @@
 package main
 
 import (
-	api "globoplox/honk/api"
+	api "globoplox/honk/web"
 	"os"
 	"log"
 	"os/signal"

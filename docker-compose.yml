@@ -1,6 +1,6 @@
 services:
   honk:
-    build: .
+    build: api
     environment:
       - POSTGRES_PASSWORD
       - POSTGRES_USER

@@ -1,4 +1,4 @@
-package api
+package web
 
 // This file provides method for standard API response errors
 // They will write the error response

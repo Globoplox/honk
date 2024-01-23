@@ -34,7 +34,7 @@ There are no form-prefill, no automatic search based on the current domain.
 - [ ] Search pagination
 
 ### Todo for fun
-- [ ] JSX and nicer extension bundling
+- [x] JSX and "nicer" extension bundling
 - [ ] Idiomatic and nicer golang
 
 ## Usage

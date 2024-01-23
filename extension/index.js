@@ -1,11 +1,6 @@
 import * as Collapse from "./collapse";
 import * as Crypto from "./crypto";
 
-function test() {
-  return <div class="supaire" id="idk" ><span>a</span><h2>uuu</h2></div>;
-}
-
-console.log(test());
 console.log("Honk honk");
 
 const host = document.getElementById("host");
@@ -141,7 +136,6 @@ function identity_changed() {
 
 Promise.all([
   storage.get("host").then(value => { 
-    console.log("No host found")
     if (value.host != undefined)
       host.value = value.host;
     else
@@ -214,12 +208,9 @@ function save_password(id, data) {
 }
 
 function remove_password(id) {
-  fetch(`https://${host.value}/password/${id}`, {method: "DELETE", headers}).then(response => {
+  return fetch(`https://${host.value}/password/${id}`, {method: "DELETE", headers}).then(response => {
     if (response.ok) {
       // Some kind of ui validation that it worked
-      const existing = document.getElementById(`search-password-${id}`);
-      if (existing)
-        existing.remove();
       errors.innerText = '';
     } else 
       response.json().then(data => {
@@ -230,75 +221,62 @@ function remove_password(id) {
   });
 }
 
-// A dash of JSX would be nice but overkill.
+// Went completely overkill with jsx but it's fun.
+// Their is only a jsx syntax transformer, no reactive store  nor virtual dom.
+// So I keep ref to elements of the dom tree that requires changes and update them the old way.
 function render_entry(entry) {
-    const container = document.createElement("li");
-    const header = document.createElement("div");
-    const text_name = document.createElement("div");
-    const text_tags = document.createElement("div");
-    const body = document.createElement("div");
-    const name = document.createElement("input");
-    const tags = document.createElement("input");
-    const data = document.createElement("textarea");
-    const actions =  document.createElement("div");
-    const edit = document.createElement("button");
-    const remove = document.createElement("button");
-    let deciphered = false;
+  const refs = {};
+  let edit;
+  let name;
+  let tags;
+  let data;
+  let deciphered = false;
 
-    text_name.innerText = entry.name;
-    text_tags.innerText = entry.tags.join(' ');
-    name.value = entry.name;
-    tags.value = entry.tags.join(' ');
-    data.value = "Deciphering....";
-    edit.innerText = "Save changes";
-    edit.disabled = true;
-    remove.innerText = "Remove";
+  const onchange = event => {
+    refs.edit.disabled = false;
+  };
 
-    container.classList.add("collapsed");
-    container.id = `search-password-${entry.id}`;
-    body.classList.add("padding-bottom-8");
-    header.classList.add("collapsible-header");
-    header.classList.add("collapse-button");
-    body.classList.add("collapsible-body");
-
-    actions.classList.add("flex-row")
-    actions.classList.add("spread")
-    actions.replaceChildren(edit, remove);
-    
-    header.replaceChildren(text_name, text_tags);
-    body.replaceChildren(name, tags, data, actions);
-    container.replaceChildren(header, body);
-    
-    const onchange = event => {
-        edit.disabled = false;
-    };
-
-    name.onchange = onchange;
-    tags.onchange = onchange;
-
-    Crypto.decrypt(entry.data, password.value).then(text => {
-        data.value = text; 
-        data.onchange = onchange;
-        deciphered = true;
-    });
-
-    edit.onclick = event => {
-        if (deciphered) {
-            Crypto.encrypt(data.value, password.value).then(data => {
-                save_password(entry.id, {data, name: name.values, tags: tags.value.split(' ')});
-            });
-        } else {
-            save_password(entry.id, {data: entry.data, name: name.values, tags: tags.value.split(' ')});
+  const onedit = event => {
+      if (deciphered) {
+          Crypto.encrypt(refs.data.value, password.value).then(data => {
+            save_password(entry.id, {data, name: refs.name.values, tags: refs.tags.value.split(' ')})
+              //.then(e => {refs.edit.disabled = true});
+          });
+      } else {
+        save_password(entry.id, {data: entry.data, name: refs.name.values, tags: refs.tags.value.split(' ')})
+            //.then(e => {refs.edit.disabled = true});
         }
-    };
+  };
 
-    remove.onclick = event => {
-        remove_password(entry.id).then(() => {
-            // Todo Remove self from parent
-        });
-    };
+  const onremove = event => {
+      remove_password(entry.id).then(() => {
+        const existing = document.getElementById(`search-password-${entry.id}`);
+        if (existing)
+          existing.remove();
+      });
+  };
 
-    return container;
+  Crypto.decrypt(entry.data, password.value).then(text => {
+    refs.data.value = text; 
+    refs.data.oninput = onchange;
+    refs.deciphered = true;
+  });
+
+  return <li id={`search-password-${entry.id}`} class="collpased">
+    <div class="collapsible-header collapse-button">
+      <div>{entry.name}</div>
+      <div>{entry.tags.join(' ')}</div>
+    </div>
+    <div class="collapsible-body padding-bottom-8">
+      {refs.name = <input onchange={onchange} value={entry.name}/>}
+      {refs.tags = <input onchange={onchange} value={entry.tags.join(' ')}/>}
+      {refs.data = <textarea>Deciphering....</textarea>}
+      <div class="flex-row spread">
+        {refs.edit = <button onclick={onedit} disabled>Save changes</button>}
+        <button onclick={onremove}>Remove</button>
+      </div>
+    </div>
+  </li>;
 };
 
 /* Create new records */

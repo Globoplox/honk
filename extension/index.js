@@ -124,6 +124,7 @@ function identity_changed() {
           identity = data;
           display_status();
           prefill();
+          errors.innerText = "";
         });
       else {
         errors.innerText = "Could not login";
@@ -140,18 +141,25 @@ function identity_changed() {
 
 Promise.all([
   storage.get("host").then(value => { 
+    console.log("No host found")
     if (value.host != undefined)
       host.value = value.host;
+    else
+      Collapse.expend(config_section);
   }),
   storage.get("username").then(value => { 
     if (value.username != undefined)
       username.value = value.username;
-  
+    else
+      Collapse.expend(config_section);
+    
   }),
   storage.get("password").then(value => {
     if (value.password != undefined)
       password.value = value.password;
-  })
+    else
+      Collapse.expend(config_section);
+    })
 ]).then(_ => host_changed())
 
 host.onchange = (e) => { 
@@ -172,7 +180,7 @@ password.onchange = (e) => {
 
 /* Search records */
 
-tags.onchange = (e) => {
+tags.oninput = (e) => {
     fetch(`https://${host.value}/passwords?search=${tags.value}`, {headers}).then(response => {
         if (response.ok) {
             response.json().then(data => { 
@@ -195,6 +203,12 @@ tags.onchange = (e) => {
     });
 };
 
+tags.onkeydown = (e) => {
+  if (tags.value == "" && e.keyCode == 13)
+    tags.oninput();
+};
+
+
 function save_password(id, data) {
 
 }
@@ -206,6 +220,7 @@ function remove_password(id) {
       const existing = document.getElementById(`search-password-${id}`);
       if (existing)
         existing.remove();
+      errors.innerText = '';
     } else 
       response.json().then(data => {
         errors.innerText = `❌ ${data.error}`;
@@ -308,9 +323,10 @@ create_record_button.onclick = event => {
       data
     };
     fetch(`https://${host.value}/password`, {method: "POST", headers, body: JSON.stringify(body)}).then(response => {
-      if (response.ok)
+      if (response.ok) {
         create_record_status.innerText = `🆗 created`;
-      else 
+        create_record_status.innerText = '';
+      } else 
         response.json().then(data => {
           create_record_status.innerText = `❌ ${data.error}`;
         });      

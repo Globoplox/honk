@@ -5,39 +5,43 @@ A KISS personal password manager, by me for me.
 Not meant to be taken too seriously. This is a small pet project 
 and pretext for learning the basics of golang and looking at web extensions.  
 
-It must:
-  - Allow to save and retrieve passwords
-  - On all my devices
-  - Securely
-  - With a good availability
-  - With a low risk risk of loosing my passwords
-  - Easy and cheap to host
-
-Done because current offer of password manager is unstaisfying, it's easy, invlovle interesting topics (availablity and data safekeep) that I will have a personal intereset in pursuing.
-It'a good opportunity to use/learn new technologies that I have an interest in.
-
 It involves:
-  - Golang written api (I want to learn go)
-  - The upkeep it needs (reverse proxy, database, ops tooling)
-  - The hosting (my own physical server, dns, tls certs)
-  - Browser extension that works on mobile
+  - Golang written api
+  - Browser extension
+
+The backend is a simple basic passowrd authentication go crud json api for 'passwords' which are tagged, named bunch of text.  
+There are ZERO cipher on backend side. Name and tags are expected to clear text.  
+The data are expected to be pre-ciphered by the client.  
+
+The extension handles symetric de/ciphering of the data.  
+Implementation details for implementing a cipher compatible alternative client:
+- Ciphertext is expected to be a json object of this form `{"data": "...", "iv": "...", "salt": "..."}`
+- data, iv, and salt are hexstrings
+- data is the original text ciphered through AES-GCM with the given iv
+- Cipher key is derived from a user provided password through PBKDF2 with the given salt
+- See [crypto.js](/extension/crypto.js)
+
+In the implemented extension client use a single password and expect the account password to be a salted hash of the cipher password.  
+The cipher password never leave the browser.  
+
+Data can be anything text, so passwords, notes, keys, certificates...  
+There are no form-prefill, no automatic search based on the current domain.  
 
 ## Todo
 - [ ] Api user email field
 - [ ] Api user update
-- [ ] Api user create
+- [ ] Api user create limitation (local only ?)
 - [ ] Search pagination
 
 ### Todo for fun
 - [ ] JSX and nicer extension bundling
-- [ ] Idiomatic golang
-- [ ] Better file structure despite go 
+- [ ] Idiomatic and nicer golang
 
 ## Usage
 
 Its not done yet, so who knows.
 
-## Deployment
+## API Deployment
 
 ### Docker
 
@@ -62,3 +66,9 @@ Here is what the setup script does, that you will need or want to do manually:
 
 You can figure it out yourself.
 The requirment can be found easely by looking at the docker-compose file and env.local.template .
+
+## Extension
+
+Built and tested for firefox.  
+go in the `extension` directory and run `npx webpack`. You will need npm.  
+The extension will be found in `dist/honk.zip`

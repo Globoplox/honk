@@ -113,7 +113,7 @@ function identity_changed() {
 
   prehash(username.value, "HONK HONK", password.value).then(prehashed => {
   headers["Authorization"] = `Basic ${btoa(`${username.value}:${prehashed}`)}`;
-  fetch(`https://${host.value}/user/self`, {headers, mode: "cors"}).then(response => {
+  fetch(`https://${host.value}/users/self`, {headers, mode: "cors"}).then(response => {
       if (response.ok)
         response.json().then(data => { 
           identity = data;
@@ -208,7 +208,7 @@ function save_password(id, data) {
 }
 
 function remove_password(id) {
-  return fetch(`https://${host.value}/password/${id}`, {method: "DELETE", headers}).then(response => {
+  return fetch(`https://${host.value}/passwords/${id}`, {method: "DELETE", headers}).then(response => {
     if (response.ok) {
       // Some kind of ui validation that it worked
       errors.innerText = '';
@@ -300,7 +300,7 @@ create_record_button.onclick = event => {
       tags: new_record_tags.value.split(" "),
       data
     };
-    fetch(`https://${host.value}/password`, {method: "POST", headers, body: JSON.stringify(body)}).then(response => {
+    fetch(`https://${host.value}/passwords`, {method: "POST", headers, body: JSON.stringify(body)}).then(response => {
       if (response.ok) {
         create_record_status.innerText = `🆗 created`;
         create_record_status.innerText = '';

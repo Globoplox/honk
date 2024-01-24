@@ -12,22 +12,22 @@ type userCreateInput struct {
 	Password *string `json:"password"`
 }
 
-func userCreate(w http.ResponseWriter, r *http.Request, a *Api) {
+func usersCreate(ctx *Context) {
 	var input userCreateInput
-	json.NewDecoder(r.Body).Decode(&input)
+	json.NewDecoder(ctx.Request.Body).Decode(&input)
 
 	if input.Name == nil {
-		BadParameter(w, r, "name", "must not be null")
+		ctx.BadParameter("name", "must not be null")
 		return
 	}
 
 	if len(*input.Name) <= 3 {
-		BadParameter(w, r, "name", "must be at least 3 characters")
+		ctx.BadParameter("name", "must be at least 3 characters")
 		return
 	}
 
 	if len(*input.Name) > 200 {
-		BadParameter(w, r, "name", "must be at most 200 characters")
+		ctx.BadParameter("name", "must be at most 200 characters")
 		return
 	}
 
@@ -37,17 +37,17 @@ func userCreate(w http.ResponseWriter, r *http.Request, a *Api) {
 	// because it don't like the domain or because it has a character it disliked in it.
 	// I needed to vent.
 	if input.Email != nil && len(*input.Email) > 200 {
-		BadParameter(w, r, "email", "must be at most 200 characters")
+		ctx.BadParameter("email", "must be at most 200 characters")
 		return
 	}
 
 	if input.Password == nil {
-		BadParameter(w, r, "password", "must not be null")
+		ctx.BadParameter("password", "must not be null")
 		return
 	}
 
 	if len(*input.Password) < 8 {
-		BadParameter(w, r, "password", "must be at least 8 characters")
+		ctx.BadParameter("password", "must be at least 8 characters")
 		return
 	}
 
@@ -56,17 +56,20 @@ func userCreate(w http.ResponseWriter, r *http.Request, a *Api) {
 	password_hash, err := bcrypt.GenerateFromPassword([]byte(*input.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		ServerError(w, r, apiError { "Could not hash password", err })
+		ctx.ServerError(apiError { "Could not hash password", err })
 		return
 	}
 
-
-	_, err = a.Db.Pool.Exec(r.Context(), "INSERT INTO users (name, password, email) VALUES ($1, $2, $3)", input.Name, password_hash, input.Email)
+	_, err = ctx.Database().Exec(
+		ctx.Context(), 
+		"INSERT INTO users (name, password, email) VALUES ($1, $2, $3)", 
+		input.Name, password_hash, input.Email,
+	)
 	if err != nil {
-		ServerError(w, r, apiError { "Could not create user", err })
+		ctx.ServerError(apiError { "Could not create user", err })
 		return 
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	ctx.Response.WriteHeader(http.StatusCreated)
 	return
 }

@@ -2,6 +2,8 @@ package web
 
 import (
 	"globoplox/honk/database"
+	"github.com/globoplox/gradix"
+	"github.com/jackc/pgx/v5/pgxpool" // i dislike this
 	"net"
 	"net/http"
 	"fmt"
@@ -9,7 +11,19 @@ import (
 	"os"
 	"context"
 	"errors"
+	"encoding/json"
 )
+
+// Small trick because go dont automatically a function as a valid implementation
+// of an interface that declare only a method of similar prototype
+// Also must declare a type because somehow 
+// go dislike func as receiver.
+// guess they haven't heard of referential transpatency
+type httpHandler func(http.ResponseWriter, *http.Request)
+func (self httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    self(w, r)
+}
+// Tada !
 
 type apiError struct {
 	message string
@@ -28,42 +42,41 @@ func (err apiError) Unwrap() error {
 	return err.cause
 }
 
+type Context struct {
+	Response http.ResponseWriter
+	Request *http.Request
+	UriParameters map[string]string
+	Api *Api
+}
+
+func (ctx *Context) Context() context.Context {
+	return ctx.Request.Context()
+}
+
+func (ctx *Context) Database() *pgxpool.Pool {
+	return ctx.Api.Db.Pool
+}
+
+type routeNotFound struct {
+	Error string `json:"error"`
+	Path string `json:"path"`
+}
+
 type Api struct {
 	Db *database.Handle
 	server *http.Server
 	listener *net.Listener
-	router *http.ServeMux
+	router *gradix.Radix[func(*Context)]
 }
 
-func (handle *Api) Close() {
-	handle.server.Shutdown(context.Background()) // Why the hell does it need context ? Should I care ? Looks into it
-	handle.Db.Close()
+func (self *Api) Close() {
+	// Why the hell does it need context ? Should I care ? Looks into it
+	self.server.Shutdown(context.Background())
+	self.Db.Close()
 }
 
-type wrapperHandler struct {
-	router *http.ServeMux
-}
-
-func (handler wrapperHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Request Start '%s' '%s'", r.Method, r.URL)
-	origin := r.Header.Get("Origin")
-	if len(origin) != 0 {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Vary", "Origin")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, PATCH, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		if r.Method != http.MethodOptions {
-			handler.router.ServeHTTP(w, r)
-		}
-	} else {
-		handler.router.ServeHTTP(w, r)
-	}
-	log.Printf("Request Ended '%s'", r.URL)
-}
-
-func (handle *Api) Start() error {
-	err := handle.server.Serve(*handle.listener)
-	if !errors.Is(err, http.ErrServerClosed) {
+func (self *Api) Start() error {
+	if err := self.server.Serve(*self.listener); !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil
@@ -87,26 +100,46 @@ func NewFromEnv() (*Api, error) {
 		return nil, apiError { "Missing or empty environment varibale API_ADDRESS", nil }
 	}
 
+	api := &Api{}
+
+	api.Db = db
+
 	listener, err := net.Listen(api_network, api_address)
 	if err != nil {
 		db.Close()
 		return nil, apiError { "Could not open the API socket", err }
 	}
+	api.listener = &listener
 
-	// Todo: drop it entierly, this is pure crap
-	router := http.NewServeMux()
-	wrapper := wrapperHandler { router }
-	server := http.Server{ Handler: wrapper }
+	api.router = gradix.New[func(*Context)]()
 
-	handle := &Api{ db, &server, &listener, router }
+	api.server = &http.Server{ Handler: httpHandler(func (w http.ResponseWriter, r *http.Request) {
+		log.Printf("Request Start '%s' '%s'", r.Method, r.URL)
+		
+		if origin := r.Header.Get("Origin"); len(origin) != 0 {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, PATCH, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
 
-	handle.registerAllRoutes()
+		if r.Method != http.MethodOptions {
+			match := api.router.Search(fmt.Sprintf("/%v/%v", r.Method, r.URL.Path))
+			if len(match) == 0 {
+				w.WriteHeader(http.StatusNotFound)
+				json.NewEncoder(w).Encode(routeNotFound{ fmt.Sprintf("Route '%v' not found", r.URL), r.URL.String() })			
+			} else {
+				match[0].Payload(&Context{w, r, match[0].Parameters, api})
+			}
+		}
+		log.Printf("Request Ended '%s'", r.URL)
+	}) }
 
-	return handle, nil
+	api.registerAllRoutes()
+
+	return api, nil
 }
 
-func (handle *Api) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request, *Api)) {
-	handle.router.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, handle)
-	})
+func (self *Api) Register(method string, path string, handler func(*Context)) {
+	self.router.Add(fmt.Sprintf("/%v/%v", method, path), handler)
 }

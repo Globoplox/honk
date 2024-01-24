@@ -19,9 +19,8 @@ func main() {
 
 	// Start API, if it somehow stop, then stop the program
 	go func() {
-		err = a.Start()
 		// Err is nil if the server has been manualy stopped.
-		if err != nil {
+		if err = a.Start(); err != nil {
 			log.Printf("Api server stopped unexpectedly: '%v'.", err)
 		}
 		close(stopChannel)

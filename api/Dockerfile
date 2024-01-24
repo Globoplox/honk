@@ -1,4 +1,6 @@
-FROM golang:1.21.4-alpine
+FROM golang:1.21.5-alpine
+RUN apk add git
+ENV GOPROXY=direct
 WORKDIR /root
 COPY . .
 RUN go build .

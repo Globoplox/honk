@@ -1,7 +1,6 @@
 package web
 
 import (
-	"net/http"
 	"encoding/json"
 	"strings"
 	"time"
@@ -18,34 +17,35 @@ type passwordSearchOutput struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-func passwordsSearch(w http.ResponseWriter, r *http.Request, a *Api) {
-	userId := Authenticate(a, w, r)
+func passwordsSearch(ctx *Context) {
+	userId := ctx.Authenticate()
+
 	if userId == nil {
 		return
 	}
 
-	terms := strings.Split(r.URL.Query().Get("search"), ",")
+	terms := strings.Split(ctx.Request.URL.Query().Get("search"), ",")
 	terms = slices.DeleteFunc(terms, func(term string) bool {
         return term == ""
     })
 
-	page_param := r.URL.Query().Get("page")
+	page_param := ctx.Request.URL.Query().Get("page")
 	page := 0
 	if page_param != "" {
 		page, err := strconv.Atoi(page_param)
 		if err != nil {
-			BadParameter(w, r, "page", "Must be an integer")
+			ctx.BadParameter("page", "Must be an integer")
 			return 
 		}
 		if page < 1 {
-			BadParameter(w, r, "page", "Must be higher than 0")
+			ctx.BadParameter("page", "Must be higher than 0")
 			return 
 		}
 		page = page - 1
 	}
 	offset := page * 10
 
-	rows, err := a.Db.Pool.Query(r.Context(), `
+	rows, err := ctx.Database().Query(ctx.Context(), `
 		SELECT id, name, tags, data, created_at, updated_at
 		FROM passwords
 		WHERE user_id = $1
@@ -68,7 +68,7 @@ func passwordsSearch(w http.ResponseWriter, r *http.Request, a *Api) {
 	// Hopefully optimizer catch it.
 
 	if err != nil {
-		ServerError(w, r, apiError { "Could not search password", err })
+		ctx.ServerError(apiError { "Could not search password", err })
 		return 
 	}
 
@@ -86,11 +86,11 @@ func passwordsSearch(w http.ResponseWriter, r *http.Request, a *Api) {
 	  p.CreatedAt = created.Format(time.RFC3339)
 	  p.UpdatedAt = updated.Format(time.RFC3339)
 	  if err != nil {
-		ServerError(w, r, apiError { "Could not search password", err })
+		ctx.ServerError(apiError { "Could not search password", err })
 		return 
 	  }
 	  passwords = append(passwords, p)
 	}
 
-	json.NewEncoder(w).Encode(passwords)
+	json.NewEncoder(ctx.Response).Encode(passwords)
 }

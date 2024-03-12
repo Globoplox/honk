@@ -15,9 +15,9 @@
     "browser_action": {
         "default_icon": "icons/honk-32.png",
         "default_title": "Honk",
-        "default_popup": "honk.html"
+        "default_popup": "index.html"
     },
 
     "web_accessible_resources": []
-  }
+}
   

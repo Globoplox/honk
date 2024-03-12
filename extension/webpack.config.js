@@ -1,43 +1,49 @@
 const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
 const ZipPlugin = require('zip-webpack-plugin');
+const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 module.exports = {
   mode: 'development',
   devtool: 'source-map',
-  entry: './index.js',
+  entry: './src/main.tsx',
+  
+
   output: {
     filename: 'honk.js',
     path: path.resolve(__dirname, 'dist'),
   },
+
   module: {
     rules: [
       {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            plugins: [
-              ['@babel/plugin-transform-react-jsx', {
-                runtime: 'classic',
-                pragma: 'this.jsx'
-              }]
-            ]
-          }
-        }
+        test: /\.tsx$/,
+        loader: 'ts-loader',
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader",
+        ]
       }
     ]
   },
+
   plugins: [
+    new HtmlWebpackPlugin({
+      template: "./src/index.html"
+    }),
+      
     new CopyPlugin({
       patterns: [
         "manifest.json",
         "*.css",
-        {from: "icons", to: "icons"},
-        {from: "index.html", to: "honk.html"}
+        {from: "icons", to: "icons"}
       ],
     }),
+    
     new ZipPlugin({
       filename: 'honk',
     })

@@ -1,7 +1,27 @@
 import * as Collapse from "./collapse";
 import * as Crypto from "./crypto";
+import {jsx} from "./jsx/jsx-runtime";
 
 console.log("Honk honk");
+
+class Test {
+  jsx(...params) {
+    console.log("CALLED THE SCOPED JSX !");
+    console.log(...params);
+  }
+
+  jsxs(...params) {
+    jsx(params)
+  }
+
+  some_property = "form" 
+
+  dothing() {
+    console.log(<some_property stuff="truc">Hallo</some_property>);
+  }
+}
+
+new Test().dothing();
 
 const host = document.getElementById("host");
 const username = document.getElementById("username");

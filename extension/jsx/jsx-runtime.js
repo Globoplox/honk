@@ -1,4 +1,5 @@
 export function jsx(...params) {
+  console.log(params);
   const [tag, parameters] = params;
   const e = document.createElement(tag);
   const {children, ...properties} = parameters;

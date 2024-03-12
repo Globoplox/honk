@@ -20,8 +20,8 @@ module.exports = {
           options: {
             plugins: [
               ['@babel/plugin-transform-react-jsx', {
-                runtime: 'automatic',
-                importSource: './jsx'
+                runtime: 'classic',
+                pragma: 'this.jsx'
               }]
             ]
           }

@@ -9,7 +9,7 @@ It involves:
   - Golang written api
   - Browser extension
 
-The backend is a simple basic passowrd authentication go crud json api for 'passwords' which are tagged, named bunch of text.  
+The backend is a simple basic password authentication go crud json api for 'passwords' which are tagged, named bunch of text.  
 There are ZERO cipher on backend side. Name and tags are expected to clear text.  
 The data are expected to be pre-ciphered by the client.  
 
@@ -32,10 +32,19 @@ There are no form-prefill, no automatic search based on the current domain.
 - [ ] Api user update
 - [ ] Api user create limitation (local only ?)
 - [ ] Search pagination
+- [ ] Batch password changes
+- [ ] Multiple passwords and password hash/tag
+- [ ] Webauth alternatives to password
+- [ ] Password in local storage should be optional
+- [ ] Backup mechanism
 
 ### Todo for fun
 - [x] JSX and "nicer" extension bundling
 - [ ] Idiomatic and nicer golang
+
+### Refacto for additional value
+- [ ] Use "idiomatic" go frameworks (API, ORM)
+- [ ] React Front. Maybe even typescript.
 
 ## Usage
 

@@ -5,6 +5,9 @@
   "private": "true",
   "keywords": [],
   "author": "Globoplox",
+  "scripts": {
+    "dev-build": "./node_modules/webpack/bin/webpack.js"
+  },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.10.0",
@@ -23,6 +26,7 @@
     "@types/react-dom": "^18.2.21",
     "bootstrap": "^5.3.3",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.10.1",
     "react-dom": "^18.2.0"
   }
 }

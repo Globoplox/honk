@@ -1,0 +1,9 @@
+@import "bootstrap";
+
+$extension-window-width: 384px;
+$extension-window-height: 512px;
+
+body {
+    width: $extension-window-width;
+    height: $extension-window-height;
+}

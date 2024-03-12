@@ -7,6 +7,11 @@ module.exports = {
   mode: 'development',
   devtool: 'source-map',
   entry: './src/main.tsx',
+
+  resolve: {
+    extensions: ['.js', '.jsx', '.tsx', '.ts'],
+    modules: ['node_modules'],
+  },
   
 
   output: {

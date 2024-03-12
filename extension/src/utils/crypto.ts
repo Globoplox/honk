@@ -1,12 +1,12 @@
-function atoh(data) {
+function atoh(data: ArrayBuffer) {
   return [...new Uint8Array(data)].map(b => b.toString (16).padStart(2, "0")).join('');
 }
 
-function htoa(h) {
-  return Uint8Array.from(h.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+function htoa(hex: string) {
+  return Uint8Array.from(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
 }
 
-function derive_key(password, salt) {
+function derive_key(password: BufferSource, salt: BufferSource) {
   return crypto.subtle.importKey(
     "raw", 
     password, 
@@ -29,7 +29,14 @@ function derive_key(password, salt) {
   })
 }
 
-export function encrypt(text, password) {
+export function prehash(salt: string, pepper: string, password: string) {
+  return crypto.subtle.digest(
+    'SHA-256', 
+    new TextEncoder().encode(`${salt}${pepper}${password}`)
+  ).then(atoh)
+}
+
+export function encrypt(text: string, password: string) {
   const data = new TextEncoder().encode(text);
   const iv = window.crypto.getRandomValues(new Uint8Array(16));
   const salt = window.crypto.getRandomValues(new Uint8Array(16));
@@ -51,7 +58,7 @@ export function encrypt(text, password) {
   });
 }
 
-export function decrypt(cipher, password) {
+export function decrypt(cipher: string, password: string) {
   const {data, iv, salt} = JSON.parse(cipher);
   
   return derive_key(

@@ -1,5 +1,5 @@
 import * as Collapse from "./collapse";
-import * as Crypto from "./crypto";
+import * as Crypto from "./src/utils/crypto";
 import {jsx} from "./jsx/jsx-runtime";
 
 console.log("Honk honk");

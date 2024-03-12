@@ -2,71 +2,76 @@ import Api from '../api'
 import Accordion from 'react-bootstrap/Accordion'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
-import { ChangeEvent, KeyboardEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
+
 
 /**
+ * An `Accordion.Item` wrapped form that allows to set and update the 
+ *   api connection settings.
  * TODO:
- * - Define a repository
- * - Find a way to provide the repository to parent/sibling
+ * - Add option to disable saving password in local storage
+ * - Automatically open settings in case of bad/empty settings
+ * - Consider using onInput on fields
  */
-export default function Configuration() {
-    const api = new Api();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+export default function Configuration({api} : {api: Api}) {
+    const [username, setUsername] = useState(localStorage.getItem("username") || "");
+    const [password, setPassword] = useState(localStorage.getItem("password") || "");
     const [authError, setAuthError] = useState(null);
     const [authStatus, setAuthStatus] = useState(false);
-    const [hostname, setHostname] = useState("");
+    const [hostname, setHostname] = useState(localStorage.getItem("hostname") || "");
     const [hostnameError, setHostnameError]  = useState(null);
     const [serverStatus, setServerStatus]  = useState(null);
 
-    function onAuthChange(username: string, password: string, serverStatus: String) {
+    // Initial attempt in case we read settings from local storage.
+    // Must be done only once at first render, hende the userEffect(.., [])
+    if (hostname !== null && username !== null && password !== null)
+        useEffect(() => onAuthChange(username, password, hostname), [])    
+    
+    function onAuthChange(username: string, password: string, hostname: string) {
         if (hostname === '') {
             setHostnameError(null)
             setServerStatus(null)
             return
         }
 
-        if (username === '' || password === '') {
-            setAuthError(null)
-            setAuthStatus(false)
-            return
-        }
-
-        api.selfTest(hostname, username, password).then(status => {
-            setServerStatus(status)
-            setHostnameError(null)
-            setAuthError(null)
-            setAuthStatus(true)
-        }).catch(error => {
-            switch (error.kind) {
-                case Api.ErrorCategory.Network:
-                    setServerStatus(null)
-                    setHostnameError(error.details)
-                    setAuthError(null)
-                    setAuthStatus(false)
-                    break;
-                case Api.ErrorCategory.Authentication:
-                    setAuthError(error.details)
-                    setAuthStatus(false)
+        api.selfTest(hostname, username, password).then(results => {
+            if (typeof results.status === "string") {
+                setServerStatus(results.status)
+                setHostnameError(null)    
+            } else {
+                setServerStatus(null)
+                setHostnameError(results.status.details)
+            }
+            
+            if (username === '' || password === '' || results.user === null) {
+                setAuthError(null)
+                setAuthStatus(false)
+            } else if ("error" in results.user) {
+                setAuthError(results.user.details || "Authentication failed")
+                setAuthStatus(false)
+            } else {
+                setAuthError(null)
+                setAuthStatus(true)  
             }
         })
-
-
     };
 
     function onUsernameChange(e: ChangeEvent<HTMLInputElement>) {
         setUsername(e.target.value)
-        onAuthChange(e.target.value, password, serverStatus)
+        onAuthChange(e.target.value, password, hostname)
+        localStorage.setItem("username", e.target.value)
     }
     
     function onPasswordChange(e: ChangeEvent<HTMLInputElement>) {
         setPassword(e.target.value)
-        onAuthChange(username, e.target.value, serverStatus)
+        onAuthChange(username, e.target.value, hostname)
+        localStorage.setItem("password", e.target.value)
     }
    
     function onHostnameChange(e: ChangeEvent<HTMLInputElement>) {
         setHostname(e.target.value)
         onAuthChange(username, password, e.target.value)
+        localStorage.setItem("hostname", e.target.value)
     }
 
     return (

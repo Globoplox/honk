@@ -1,40 +1,49 @@
+import Api from '../api'
+import Form from 'react-bootstrap/Form'
 import Accordion from 'react-bootstrap/Accordion'
 import { ChangeEvent, KeyboardEvent, useState } from "react";
+import SearchResultItem from './search_result_item';
 
-export default function Search() {
-    const [query, setQuery] = useState("");
+export default function Search({api} : {api: Api}) {
+    const [enabled, setEnabled] = useState(api.isReady)
+    const [query, setQuery] = useState("")
+    const [entries, setEntries] = useState([])
 
-    function search() {}
+    api.on('ready', () => setEnabled(true))
 
-    function onInput(e: ChangeEvent<HTMLInputElement>) {
+    function search(query: string) {
+        api.search(query).then(setEntries)
+    }
+
+    function onChange(e: ChangeEvent<HTMLInputElement>) {
         setQuery(e.target.value);
-        search();
+        search(e.target.value);
     };
 
-    // Sometimes browsers dont emit input events when 
-    // pressing enter in an empty field. We want to 
-    // trigger a search even on empty query.
+    // This is skipped by events emitter
+    // but we want it to trigger no query search (returning all results)
     function onKeydown(e: KeyboardEvent<HTMLInputElement>) {
-        if (query === "" && e.code === "Enter") {
-            setQuery("");
-            search();
-        }
-    };
-    
+        if (e.code === 'Enter' && e.currentTarget.value === '')
+            search('')
+    }
+
     return (
         <Accordion.Item eventKey='search'>
             <Accordion.Header>
-                <input 
+                <Form.Control
                     type="text" 
                     value={query} 
                     className="form-control"
                     placeholder="Search"
-                    onChange={onInput}
-                    onKeyDown={onKeydown} 
+                    onChange={onChange}
+                    onKeyDown={onKeydown}
+                    disabled={!enabled}
                 />
             </Accordion.Header>
             <Accordion.Body>
-
+                <Accordion flush>
+                    {entries.map(entry => <SearchResultItem key={entry.id} entry={entry}/>)}
+                </Accordion>
             </Accordion.Body>
         </Accordion.Item>
     );

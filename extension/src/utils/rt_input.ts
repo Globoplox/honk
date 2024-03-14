@@ -3,6 +3,7 @@
  * Add a delay to event that get cancelled when it is overriden.
  * Use case are real time input that start a process when the user is done
  * typing.
+ * TODO: remove and use effects instead.
  */
 export default class RTInput {
     #handler: () => void

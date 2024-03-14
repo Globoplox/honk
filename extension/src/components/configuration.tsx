@@ -1,10 +1,9 @@
 import Api from '../api'
-import RTInput from '../utils/rt_input'
 import './configuration.scss'
 import Accordion from 'react-bootstrap/Accordion'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, MutableRefObject, useEffect, useRef, useState } from 'react'
 
 /**
  * An `Accordion.Item` wrapped form that allows to set and update the 
@@ -12,8 +11,6 @@ import { ChangeEvent, useEffect, useState } from 'react'
  * TODO:
  * - Add option to disable saving password in local storage
  * - Automatically open settings in case of bad/empty settings
- * - Consider using onInput on fields => No. onBlur neither. Keep searching.
- *   if nothing easy works, add an interruptable delay 
  */
 export default function Configuration({api} : {api: Api}) {
     const [username, setUsername] = useState(localStorage.getItem("username") || "");
@@ -21,21 +18,26 @@ export default function Configuration({api} : {api: Api}) {
     const [authError, setAuthError] = useState(null);
     const [authStatus, setAuthStatus] = useState(false);
     const [hostname, setHostname] = useState(localStorage.getItem("hostname") || "");
-    const [hostnameError, setHostnameError]  = useState(null);
-    const [serverStatus, setServerStatus]  = useState(null);
-    const [inputDelay, setInputDelay] = useState(new RTInput(null, 350))
+    const [hostnameError, setHostnameError] = useState(null);
+    const [serverStatus, setServerStatus] = useState(null);
+    const inputDelay : MutableRefObject<ReturnType<typeof setTimeout>> = useRef(null)
 
-    // TODO: replace RTInput with a useRef containing the timeout refs.
+    useEffect(
+        () => scheduleAuthChange(username, password, hostname), 
+        [username, password, hostname]
+    )
 
-    // Initial attempt in case we read settings from local storage.
-    // Must be done only once at first render, hende the userEffect(.., [])
-    if (hostname !== null && username !== null && password !== null)
-        useEffect(() => onAuthChange(username, password, hostname), [])    
-    
+    // Handle the common input delay
     function scheduleAuthChange(username: string, password: string, hostname: string) {
-        setInputDelay(delay => delay.schedule(() => { onAuthChange(username, password, hostname) }))
+        if (inputDelay.current !== null)
+            clearTimeout(inputDelay.current)
+        inputDelay.current = setTimeout(
+            () => { onAuthChange(username, password, hostname) }, 
+            350
+        )
     }
 
+    // Test the connecton and set state accordingly to results
     function onAuthChange(username: string, password: string, hostname: string) {
         if (hostname === '') {
             setHostnameError(null)
@@ -43,20 +45,20 @@ export default function Configuration({api} : {api: Api}) {
             return
         }
 
-        api.selfTest(hostname, username, password).then(results => {
-            if (typeof results.status === "string") {
-                setServerStatus(results.status)
+        api.selfTest(hostname, username, password).then(({status, user}) => {
+            if (typeof status === "string") {
+                setServerStatus(status)
                 setHostnameError(null)    
             } else {
                 setServerStatus(null)
-                setHostnameError(results.status.details)
+                setHostnameError(status.details)
             }
             
-            if (username === '' || password === '' || results.user === null) {
+            if (username === '' || password === '' || user === null) {
                 setAuthError(null)
                 setAuthStatus(false)
-            } else if ("error" in results.user) {
-                setAuthError(results.user.details || "Authentication failed")
+            } else if ("error" in user) {
+                setAuthError(user.details || "Authentication failed")
                 setAuthStatus(false)
             } else {
                 setAuthError(null)
@@ -67,19 +69,16 @@ export default function Configuration({api} : {api: Api}) {
 
     function onUsernameChange(e: ChangeEvent<HTMLInputElement>) {
         setUsername(e.target.value)
-        scheduleAuthChange(e.target.value, password, hostname)
         localStorage.setItem("username", e.target.value)
     }
     
     function onPasswordChange(e: ChangeEvent<HTMLInputElement>) {
         setPassword(e.target.value)
-        scheduleAuthChange(username, e.target.value, hostname)
         localStorage.setItem("password", e.target.value)
     }
    
     function onHostnameChange(e: ChangeEvent<HTMLInputElement>) {
         setHostname(e.target.value)
-        scheduleAuthChange(username, password, e.target.value)
         localStorage.setItem("hostname", e.target.value)
     }
 

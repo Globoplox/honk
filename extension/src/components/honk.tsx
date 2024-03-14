@@ -7,7 +7,7 @@ import Configuration from './configuration'
 export default function Honk() {
     const api = new Api()
     return (
-        <Accordion flush>
+        <Accordion>
             <Search api={api} />
             <Configuration api={api} />
         </Accordion>

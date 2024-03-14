@@ -1,4 +1,5 @@
 import Api from '../api'
+import './search.scss'
 import Form from 'react-bootstrap/Form'
 import Accordion from 'react-bootstrap/Accordion'
 import { ChangeEvent, KeyboardEvent, useState } from "react";
@@ -41,7 +42,7 @@ export default function Search({api} : {api: Api}) {
                 />
             </Accordion.Header>
             <Accordion.Body>
-                <Accordion flush>
+                <Accordion>
                     {entries.map(entry => <SearchResultItem key={entry.id} entry={entry}/>)}
                 </Accordion>
             </Accordion.Body>

@@ -22,6 +22,14 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.woff($|\?)|\.woff2($|\?)|\.ttf($|\?)|\.eot($|\?)|\.svg($|\?)/i,
+        type: 'asset/resource',
+        generator: {
+            filename: 'fonts/[name][ext][query]'
+        }
+      },
+
+      {
         test: /\.ts(x)?$/,
         loader: 'ts-loader',
       },

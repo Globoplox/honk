@@ -29,23 +29,19 @@ export default function Search({api} : {api: Api}) {
     }
 
     return (
-        <Accordion.Item eventKey='search'>
-            <Accordion.Header>
-                <Form.Control
-                    type="text" 
-                    value={query} 
-                    className="form-control"
-                    placeholder="Search"
-                    onChange={onChange}
-                    onKeyDown={onKeydown}
-                    disabled={!enabled}
-                />
-            </Accordion.Header>
-            <Accordion.Body>
-                <Accordion>
-                    {entries.map(entry => <SearchResultItem key={entry.id} entry={entry}/>)}
-                </Accordion>
-            </Accordion.Body>
-        </Accordion.Item>
+        <>        
+            <Form.Control
+                type="text" 
+                value={query} 
+                className="form-control"
+                placeholder="Search"
+                onChange={onChange}
+                onKeyDown={onKeydown}
+                disabled={!enabled}
+            />
+            <Accordion>
+                {entries.map(entry => <SearchResultItem key={entry.id} entry={entry}/>)}
+            </Accordion>
+        </>
     );
 };

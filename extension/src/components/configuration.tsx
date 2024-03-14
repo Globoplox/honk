@@ -83,74 +83,68 @@ export default function Configuration({api} : {api: Api}) {
     }
 
     return (
-        <Accordion.Item eventKey='configuration'>
-            <Accordion.Header>
-                Configuration
-            </Accordion.Header>
-            <Accordion.Body>
+        <>
+        Configuration
+        <Form.Group>
+            <Form.Label>Host</Form.Label>
+            <InputGroup hasValidation>
+                <InputGroup.Text>https://</InputGroup.Text>
+                <Form.Control 
+                    type="text" 
+                    value={hostname} 
+                    placeholder="honk.lan"
+                    onChange={onHostnameChange}
+                    isInvalid={hostnameError !== null}
+                    isValid={serverStatus !== null}
+                />
 
-                <Form.Group>
-                    <Form.Label>Host</Form.Label>
-                    <InputGroup hasValidation>
-                        <InputGroup.Text>https://</InputGroup.Text>
-                        <Form.Control 
-                            type="text" 
-                            value={hostname} 
-                            placeholder="honk.lan"
-                            onChange={onHostnameChange}
-                            isInvalid={hostnameError !== null}
-                            isValid={serverStatus !== null}
-                        />
+                <Form.Control.Feedback type="valid">
+                    Successfully connected. Version: {serverStatus}
+                </Form.Control.Feedback>
 
-                        <Form.Control.Feedback type="valid">
-                            Successfully connected. Version: {serverStatus}
-                        </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">
+                    {hostnameError}
+                </Form.Control.Feedback>
 
-                        <Form.Control.Feedback type="invalid">
-                            {hostnameError}
-                        </Form.Control.Feedback>
+            </InputGroup>
+            <Form.Text>
+                The host name of the server to use.
+            </Form.Text>
+        </Form.Group>
 
-                    </InputGroup>
-                    <Form.Text>
-                        The host name of the server to use.
-                    </Form.Text>
-                </Form.Group>
+        <Form.Group>
+            <Form.Label>Username</Form.Label>
+            <Form.Control 
+                type="text" 
+                value={username}
+                onChange={onUsernameChange}
+            />
+            <Form.Control.Feedback></Form.Control.Feedback>
+        </Form.Group>
 
-                <Form.Group>
-                    <Form.Label>Username</Form.Label>
-                    <Form.Control 
-                        type="text" 
-                        value={username}
-                        onChange={onUsernameChange}
-                    />
-                    <Form.Control.Feedback></Form.Control.Feedback>
-                </Form.Group>
+        <Form.Group>
+            <Form.Label>Password</Form.Label>
+            <Form.Control 
+                type="password" 
+                value={password}
+                onChange={onPasswordChange}
+                isInvalid={authError !== null}
+                isValid={authStatus}
+            />
+            <Form.Control.Feedback></Form.Control.Feedback>
+            <Form.Text>
+                The password to access your account and cipher your data. It is never shared with the server.  
+            </Form.Text>
+        
+            <Form.Control.Feedback type="valid">
+                Successfully logged in.
+            </Form.Control.Feedback>
 
-                <Form.Group>
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control 
-                        type="password" 
-                        value={password}
-                        onChange={onPasswordChange}
-                        isInvalid={authError !== null}
-                        isValid={authStatus}
-                    />
-                    <Form.Control.Feedback></Form.Control.Feedback>
-                    <Form.Text>
-                        The password to access your account and cipher your data. It is never shared with the server.  
-                    </Form.Text>
-                
-                    <Form.Control.Feedback type="valid">
-                        Successfully logged in.
-                    </Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">
+                {authError}
+            </Form.Control.Feedback>
 
-                    <Form.Control.Feedback type="invalid">
-                        {authError}
-                    </Form.Control.Feedback>
-
-                </Form.Group>
-
-            </Accordion.Body>
-        </Accordion.Item>
+        </Form.Group>
+        </>
     );
 };

@@ -1,4 +1,4 @@
-import {prehash, decrypt} from './utils/crypto'
+import {prehash, decrypt, encrypt} from './utils/crypto'
 import {EventEmitter} from 'events'
 
 
@@ -13,8 +13,10 @@ export type User = {
     created_at: string,
 }
 
+type PasswordId = string
+
 export type Password = {
-    id: string,
+    id: PasswordId,
     name: string,
     tags: Array<string>,
     data: string
@@ -32,15 +34,24 @@ export type Password = {
  * - [ ] Do not relaunch status fetch if hostname is the same in selftest
  */
 export default class Api extends EventEmitter {
+    hostname: string
+    username: string
+    password: string
+
+    constructor() {
+        super()
+        this.hostname = localStorage.getItem("hostname")
+        this.username = localStorage.getItem("username")
+        this.password = localStorage.getItem("password")
+    }
 
     #isReady = false
-    #hostname = ''
-    #password: string = null
     #headers = new Headers()
 
     selfTest(hostname: string, username: string, password: string): Promise<{status: string | Error, user: object | Error}> {
-        this.#hostname = hostname
-        this.#password = password
+        this.hostname = hostname
+        this.username = username
+        this.password = password
         
         return prehash(username, "HONK HONK", password)
         .then(hash => {
@@ -63,42 +74,68 @@ export default class Api extends EventEmitter {
         return this.#isReady
     }
 
+    // TODO: use raw error from navigator and put the toString at top level
+    // Promise errors are simply impossible to type correctly.
+    mapNetworkError(error: unknown): Promise<any> {
+        return Promise.reject({error: "Network error", details: error.toString()})
+    }
+
     self(): Promise<User> {
         return fetch(
-            `https://${this.#hostname}/users/self`, 
-            {headers: this.#headers, mode: "cors"}
+            `https://${this.hostname}/users/self`, 
+            {headers: this.#headers}
         ).then(response => {
             if (response.ok)
                 return response.json()
             else return response.json().then(_ => Promise.reject(_))
-        })
+        }, this.mapNetworkError)
     }
 
     status() : Promise<string> {
-        return fetch(`https://${this.#hostname}/version`)
+        return fetch(`https://${this.hostname}/version`)
         .then(response => {
             if (response.ok)
                 return response.text()
             else 
                 return response.json().then(_ => Promise.reject(_))
             
-        })
+        }, this.mapNetworkError)
     }
 
     search(query: string): Promise<Array<Password>> {
         return fetch(
-            `https://${this.#hostname}/passwords?search=${query}`,
-            {headers: this.#headers, mode: "cors"}
+            `https://${this.hostname}/passwords?search=${query}`,
+            {headers: this.#headers}
         ).then(response => {
             if (response.ok)
                 return response.json().then(entries => {
                     entries.forEach((entry: Password) => {
-                        entry.deciphered = decrypt(entry.data, this.#password)
+                        entry.deciphered = decrypt(entry.data, this.password)
                     })
                     return entries
                 })
             else 
                 return response.json().then(_ => Promise.reject(_))
-        })
+        }, this.mapNetworkError)
+    }
+
+    create(name: string, tags: Array<string>, data: string): Promise<boolean> {
+        return encrypt(data, this.password).then(data => {
+            const body = {
+              name: name,
+              tags: tags,
+              data
+            };
+
+            return fetch(
+                `https://${this.hostname}/passwords`, 
+                {method: "POST", headers: this.#headers, body: JSON.stringify(body)}
+            ).then(response => {
+              if (response.ok)
+                return true
+              else 
+                  return response.json().then(_ => Promise.reject(_))
+            })
+          }, this.mapNetworkError)
     }
 }

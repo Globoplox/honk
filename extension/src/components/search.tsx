@@ -4,6 +4,7 @@ import Form from 'react-bootstrap/Form'
 import Accordion from 'react-bootstrap/Accordion'
 import { ChangeEvent, KeyboardEvent, useState } from "react";
 import SearchResultItem from './search_result_item';
+import { Container } from 'react-bootstrap';
 
 export default function Search({api} : {api: Api}) {
     const [enabled, setEnabled] = useState(api.isReady)
@@ -29,19 +30,20 @@ export default function Search({api} : {api: Api}) {
     }
 
     return (
-        <>        
+        <>
+        <Container className='pt-2 mb-2'>
             <Form.Control
                 type="text" 
                 value={query} 
-                className="form-control"
                 placeholder="Search"
                 onChange={onChange}
                 onKeyDown={onKeydown}
                 disabled={!enabled}
             />
-            <Accordion>
-                {entries.map(entry => <SearchResultItem key={entry.id} entry={entry}/>)}
-            </Accordion>
+        </Container>
+        <Accordion flush>
+            {entries.map(entry => <SearchResultItem key={entry.id} entry={entry}/>)}
+        </Accordion>
         </>
     );
 };

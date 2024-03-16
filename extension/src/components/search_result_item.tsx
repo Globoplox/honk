@@ -3,6 +3,7 @@ import './search_result_item.scss'
 import Form from 'react-bootstrap/Form'
 import Accordion from 'react-bootstrap/Accordion'
 import { ChangeEvent, KeyboardEvent, useState } from "react";
+import { Row, Col, Container, Stack } from 'react-bootstrap';
 
 export default function SearchResultItem({entry}: {entry: Password}) {    
     const [name, setName] = useState(entry.name)
@@ -18,9 +19,11 @@ export default function SearchResultItem({entry}: {entry: Password}) {
 
     return (
         <Accordion.Item eventKey={entry.id}>
-            <Accordion.Header>
-                {name}
-                {tags}
+            <Accordion.Header className='no-focus-border'>
+                <Stack>
+                    <h4>{name}</h4>
+                    <span className='text-secondary'>{tags}</span>
+                </Stack>
             </Accordion.Header>
             <Accordion.Body>
 

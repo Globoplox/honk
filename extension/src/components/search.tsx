@@ -2,17 +2,25 @@ import Api from '../api'
 import './search.scss'
 import Form from 'react-bootstrap/Form'
 import Accordion from 'react-bootstrap/Accordion'
-import { ChangeEvent, KeyboardEvent, useState } from "react";
+import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
 import SearchResultItem from './search_result_item';
 import { Container } from 'react-bootstrap';
 
+// TODO: animate the deletion ?
 export default function Search({api} : {api: Api}) {
     const [enabled, setEnabled] = useState(api.isReady)
     const [query, setQuery] = useState("")
     const [entries, setEntries] = useState([])
 
-    api.on('ready', () => setEnabled(true))
+    useEffect(
+        () => { api.on('ready', () => setEnabled(true)) },
+        []
+    )
 
+    function onPasswordDeleted(id: string) {
+        setEntries(entries.filter(password => password.id !== id))
+    }
+    
     function search(query: string) {
         api.search(query).then(setEntries)
     }
@@ -42,7 +50,9 @@ export default function Search({api} : {api: Api}) {
             />
         </Container>
         <Accordion flush>
-            {entries.map(entry => <SearchResultItem key={entry.id} entry={entry}/>)}
+            {entries.map(password => 
+                <SearchResultItem api={api} key={password.id} password={password} onDelete={() => onPasswordDeleted(password.id)}/>
+            )}
         </Accordion>
         </>
     );

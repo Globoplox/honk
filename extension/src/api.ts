@@ -119,6 +119,8 @@ export default class Api extends EventEmitter {
         }, this.mapNetworkError)
     }
 
+
+
     create(name: string, tags: Array<string>, data: string): Promise<boolean> {
         return encrypt(data, this.password).then(data => {
             const body = {
@@ -138,4 +140,37 @@ export default class Api extends EventEmitter {
             })
           }, this.mapNetworkError)
     }
+
+    delete(id: PasswordId): Promise<boolean> {
+        return fetch(
+            `https://${this.hostname}/passwords/${id}`, 
+            {method: "DELETE", headers: this.#headers}
+        ).then(response => {
+            if (response.ok)
+                return true
+            else 
+                return response.json().then(_ => Promise.reject(_))
+        }, this.mapNetworkError)
+    }
+
+    update(id: PasswordId, name: string, tags: Array<string>, data: string): Promise<boolean> {
+        return encrypt(data, this.password).then(data => {
+            const body = {
+              name: name,
+              tags: tags,
+              data
+            };
+
+            return fetch(
+                `https://${this.hostname}/passwords/${id}`, 
+                {method: "PUT", headers: this.#headers, body: JSON.stringify(body)}
+            ).then(response => {
+              if (response.ok)
+                return true
+              else 
+                  return response.json().then(_ => Promise.reject(_))
+            })
+          }, this.mapNetworkError)
+    }
+
 }

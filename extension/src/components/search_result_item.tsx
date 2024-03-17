@@ -1,24 +1,19 @@
-import {Password} from '../api'
+import Api, {Password} from '../api'
 import './search_result_item.scss'
-import Form from 'react-bootstrap/Form'
 import Accordion from 'react-bootstrap/Accordion'
-import { ChangeEvent, KeyboardEvent, useState } from "react";
-import { Row, Col, Container, Stack } from 'react-bootstrap';
+import { useState } from "react";
+import { Stack } from 'react-bootstrap';
+import PasswordForm from './password_form';
 
-export default function SearchResultItem({entry}: {entry: Password}) {    
-    const [name, setName] = useState(entry.name)
-    const [tags, setTags] = useState(entry.tags.join(' '))
-    const [data, setData] = useState(null)
-
-    if (data === null)
-        entry.deciphered.then(setData)
+export default function SearchResultItem(
+    {api, password, onDelete}: 
+    {api: Api, password: Password, onDelete: () => void}
+) {    
+    const [name, setName] = useState(password.name)
+    const [tags, setTags] = useState(password.tags.join(' '))
     
-    function onNameChange() {}
-    function onTagsChange() {}
-    function onDataChange() {}
-
     return (
-        <Accordion.Item eventKey={entry.id}>
+        <Accordion.Item eventKey={password.id}>
             <Accordion.Header className='no-focus-border'>
                 <Stack>
                     <h4>{name}</h4>
@@ -26,28 +21,7 @@ export default function SearchResultItem({entry}: {entry: Password}) {
                 </Stack>
             </Accordion.Header>
             <Accordion.Body>
-
-            <Form.Control
-                type="text" 
-                value={name} 
-                onChange={onNameChange}
-                className="form-control"
-            />
-
-            <Form.Control
-                type="text" 
-                value={tags} 
-                onChange={onTagsChange}
-                className="form-control"
-            />
-
-            <Form.Control 
-                type="text" 
-                value={data || "Deciphering..."} 
-                onChange={onDataChange}
-                className="form-control"
-                placeholder="Search"
-            />
+                <PasswordForm api={api} password={password} onDelete={onDelete} onNameUpdate={setName} onTagsUpdate={setTags}/>
             </Accordion.Body>
         </Accordion.Item>
     );

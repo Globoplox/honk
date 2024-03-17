@@ -1,5 +1,4 @@
 import Api from '../api'
-import './configuration.scss'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import { ChangeEvent, MutableRefObject, useEffect, useRef, useState } from 'react'

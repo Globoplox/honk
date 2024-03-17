@@ -30,7 +30,7 @@ There are no form-prefill, no automatic search based on the current domain.
 ## Todo
 - [ ] Api user email field
 - [ ] Api user update
-- [ ] Api user create limitation (local only ?)
+- [ ] Api user create limitation
 - [ ] Search pagination
 - [ ] Batch password changes
 - [ ] Multiple passwords and password hash/tag
@@ -38,13 +38,8 @@ There are no form-prefill, no automatic search based on the current domain.
 - [ ] Password in local storage should be optional
 - [ ] Backup mechanism
 
-### Todo for fun
-- [x] JSX and "nicer" extension bundling
-- [ ] Idiomatic and nicer golang
-
 ### Refacto for additional value
 - [ ] Use "idiomatic" go frameworks (API, ORM)
-- [ ] React Front. Maybe even typescript.
 
 ## Usage
 

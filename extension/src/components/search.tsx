@@ -1,12 +1,10 @@
 import Api from '../api'
-import './search.scss'
 import Form from 'react-bootstrap/Form'
 import Accordion from 'react-bootstrap/Accordion'
 import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
 import SearchResultItem from './search_result_item';
 import { Container } from 'react-bootstrap';
 
-// TODO: animate the deletion ?
 export default function Search({api} : {api: Api}) {
     const [enabled, setEnabled] = useState(api.isReady)
     const [query, setQuery] = useState("")
@@ -22,7 +20,9 @@ export default function Search({api} : {api: Api}) {
     }
     
     function search(query: string) {
-        api.search(query).then(setEntries)
+        api.search(query).then(entries => {
+            setEntries(entries)
+        })
     }
 
     function onChange(e: ChangeEvent<HTMLInputElement>) {
@@ -41,6 +41,7 @@ export default function Search({api} : {api: Api}) {
         <>
         <Container className='pt-2 mb-2'>
             <Form.Control
+                size='lg'
                 type="text" 
                 value={query} 
                 placeholder="Search"

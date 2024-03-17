@@ -1,7 +1,6 @@
 import {prehash, decrypt, encrypt} from './utils/crypto'
 import {EventEmitter} from 'events'
 
-
 type Error = {
     error: string
     details: string

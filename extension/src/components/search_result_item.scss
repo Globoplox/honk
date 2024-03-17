@@ -4,3 +4,12 @@
         border-color: rgba(0,0,0,.125);
     }
 }
+.search-result-item-transition-exit {
+    opacity: 1;
+}
+
+.search-result-item-transition-exit-active {
+    opacity: 0;
+    transform: scaleY(0);
+    transition: opacity 300ms, transform 600ms;
+}

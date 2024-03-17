@@ -16,6 +16,7 @@ export default function PasswordForm(
     const [dataError, setDataError] = useState(null)
     const [submitSuccess, setSubmitSuccess] = useState(null)
     const [submitFailure, setSubmitFailure] = useState(null)
+    const [updateEnbaled, setUpdateEnabled] = useState(false)
     const nameDelay : MutableRefObject<ReturnType<typeof setTimeout>> = useRef(null)
     const tagsDelay : MutableRefObject<ReturnType<typeof setTimeout>> = useRef(null)
     const dataDelay : MutableRefObject<ReturnType<typeof setTimeout>> = useRef(null)
@@ -65,6 +66,7 @@ export default function PasswordForm(
         if (nameDelay.current !== null)
             clearTimeout(nameDelay.current)
         nameDelay.current = setTimeout(() => testName(e.target.value), 350)
+        setUpdateEnabled(true)
     }
     
     function onTagsChange(e: ChangeEvent<HTMLInputElement>) {
@@ -74,6 +76,7 @@ export default function PasswordForm(
         if (tagsDelay.current !== null)
             clearTimeout(tagsDelay.current)
         tagsDelay.current = setTimeout(() => testTags(e.target.value), 350)
+        setUpdateEnabled(true)
     }
     
     function onDataChange(e: ChangeEvent<HTMLInputElement>) {
@@ -81,6 +84,7 @@ export default function PasswordForm(
         if (dataDelay.current !== null)
             clearTimeout(dataDelay.current)
         dataDelay.current = setTimeout(() => testData(e.target.value), 350)
+        setUpdateEnabled(true)
     }
 
     function doCreate() {
@@ -91,6 +95,7 @@ export default function PasswordForm(
     }
 
     function doUpdate() {
+        setUpdateEnabled(false)
         api.update(password.id, name, tags.trim().split(' ').map(tag => tag.trim()).filter(i => i), data).then(
             () => { setSubmitSuccess("Password successfully updated") },
             (error) => { setSubmitFailure(error.details)}
@@ -184,7 +189,7 @@ export default function PasswordForm(
                     hidden={password === null}
                     variant='outline-primary'
                     onClick={doUpdate}
-                    disabled={!(nameError === null && tagsError === null && dataError === null && name.length > 0 && data.length > 0)}
+                    disabled={!updateEnbaled || !(nameError === null && tagsError === null && dataError === null && name.length > 0 && data.length > 0)}
                 >
                     Update
                 </Button>

@@ -1,10 +1,8 @@
 import Api from '../api'
-import './honk.scss'
 import Search from './search'
 import Configuration from './configuration'
-import CreateItem from './password_form'
 import { useRef, useState } from 'react'
-import { Nav, Navbar, Row, Tab, Tabs } from 'react-bootstrap'
+import { Tab, Tabs } from 'react-bootstrap'
 import PasswordForm from './password_form'
 
 export default function Honk() {
@@ -12,15 +10,15 @@ export default function Honk() {
     const [activeTab, setActiveTab] = useState("search")
 
     return (
-        <Tabs variant='underline' activeKey={activeTab} onSelect={tab => setActiveTab(tab)}>
-            <Tab eventKey="search" title={<h2><i className='bi bi-search'/></h2>}>
+        <Tabs justify variant='underline' activeKey={activeTab} onSelect={tab => setActiveTab(tab)}>
+            <Tab eventKey="search" title='Search'>
                 <Search api={api.current} />
             </Tab>
-            <Tab eventKey="configuration" title={<h2><i className='bi bi-gear'/></h2>}>
-                <Configuration api={api.current} onInvalidConfiguration={() => setActiveTab("configuration")} />
-            </Tab>
-            <Tab eventKey="create" title={<h2><i className='bi bi-plus'/></h2>}>
+            <Tab eventKey="create" title='Create'>
                 <PasswordForm api={api.current}/>
+            </Tab>
+            <Tab eventKey="configuration" title='Config'>
+                <Configuration api={api.current} onInvalidConfiguration={() => setActiveTab("configuration")} />
             </Tab>
         </Tabs>
     );

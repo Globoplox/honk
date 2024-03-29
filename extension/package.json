@@ -6,7 +6,8 @@
   "keywords": [],
   "author": "Globoplox",
   "scripts": {
-    "dev-build": "./node_modules/webpack/bin/webpack.js"
+    "dev-build": "ENV=development ./node_modules/webpack/bin/webpack.js",
+    "prod-build": "ENV=production ./node_modules/webpack/bin/webpack.js"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",

@@ -45,8 +45,8 @@ export default class Api extends EventEmitter {
     }
 
     #isReady = false
-    #headers = new Headers()
-
+    #headers = new Headers({'content-type': 'application/json'})
+    
     selfTest(hostname: string, username: string, password: string): Promise<{status: string | Error, user: object | Error}> {
         this.hostname = hostname
         this.username = username
@@ -81,7 +81,7 @@ export default class Api extends EventEmitter {
 
     self(): Promise<User> {
         return fetch(
-            `https://${this.hostname}/users/self`, 
+            `https://${this.hostname}/login`, 
             {headers: this.#headers}
         ).then(response => {
             if (response.ok)

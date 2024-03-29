@@ -1,7 +1,5 @@
-FROM golang:1.21.5-alpine
-RUN apk add git
-ENV GOPROXY=direct
+FROM crystallang/crystal:1.8.2-alpine
 WORKDIR /root
 COPY . .
-RUN go build .
-CMD ["/root/honk"]
+RUN shards build honk-api --no-debug --verbose --no-color -p -s -t --error-trace
+CMD ["/root/bin/honk-api"]

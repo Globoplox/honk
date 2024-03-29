@@ -1,0 +1,19 @@
+name: honk-api
+version: 0.1.0
+
+authors:
+  - globoplox <globoplox@gmail.com>
+
+dependencies:
+  cradix:
+    github: globoplox/cradix
+  redis:
+    github: stefanwille/crystal-redis
+  pg:
+    github: will/crystal-pg
+
+targets:
+  honk-api:
+    main: src/main.cr
+
+crystal: '>= 1.11.2'

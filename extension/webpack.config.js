@@ -4,7 +4,7 @@ const ZipPlugin = require('zip-webpack-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 module.exports = {
-  mode: 'development',
+  mode: process.env['ENV'] || 'production',
   devtool: 'source-map',
   entry: './src/main.tsx',
 

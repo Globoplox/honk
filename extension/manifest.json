@@ -10,7 +10,7 @@
       "96": "icons/honk-96.png"
     },
 
-    "permissions": ["clipboardWrite", "storage", "webRequest", "https://honk.lan/*", "tabs"],
+    "permissions": ["clipboardWrite", "storage", "webRequest", "https://*.*/*", "tabs"],
 
     "browser_action": {
         "default_icon": "icons/honk-32.png",
@@ -18,6 +18,6 @@
         "default_popup": "index.html"
     },
 
-    "web_accessible_resources": []
+    "web_accessible_resources": [],
 }
   

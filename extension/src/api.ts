@@ -36,6 +36,7 @@ export default class Api extends EventEmitter {
     hostname: string
     username: string
     password: string
+    token: string
 
     constructor() {
         super()
@@ -84,9 +85,10 @@ export default class Api extends EventEmitter {
             `https://${this.hostname}/login`, 
             {headers: this.#headers}
         ).then(response => {
-            if (response.ok)
+            if (response.ok) {
+                this.#headers.set('X-Auth-Token', response.headers.get('X-Auth-Token'))
                 return response.json()
-            else return response.json().then(_ => Promise.reject(_))
+            } else return response.json().then(_ => Promise.reject(_))
         }, this.mapNetworkError)
     }
 

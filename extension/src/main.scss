@@ -2,8 +2,8 @@
 $bootstrap-icons-font-src: url("bootstrap-icons/font/fonts/bootstrap-icons.woff2") format("woff2");
 @import 'bootstrap-icons/font/bootstrap-icons.scss';
 
-$extension-window-width: 384px;
-$extension-window-height: 640px;
+$extension-window-width: 360px;
+$extension-window-height: 600px;
 
 body {
     width: $extension-window-width;

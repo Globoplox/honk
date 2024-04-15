@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 module.exports = {
   mode: process.env['ENV'] || 'production',
-  devtool: 'source-map',
+  devtool: (process.env['ENV'] == 'development' ?  'source-map' : undefined),
   entry: './src/main.tsx',
 
   resolve: {

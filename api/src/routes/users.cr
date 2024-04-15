@@ -36,7 +36,7 @@ class Api
     token = UUID.random.to_s
     @cache.hmset "session:#{token}", {user_id: user.id.to_s}
     @cache.expire "session:#{token}", 10.minute.total_seconds.to_i
-    ctx.response.cookies << HTTP::Cookie.new(name: "__Host-session", value: token, secure: true, http_only: true, samesite: :lax)
+    ctx.response.headers["X-Auth-Token"] = token
     ctx << user
   end
 

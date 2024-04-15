@@ -102,28 +102,39 @@ class Api
 
     @router = Cradix(Context -> Nil).new
     
-    @server = HTTP::Server.new do |ctx|
+    @server = HTTP::Server.new do |ctx|      
       t = Time.monotonic
       Log.info &.emit "#{ctx.request.method} #{ctx.request.path.rstrip '/'}"
-      routes = @router.search "#{ctx.request.method}#{ctx.request.path.rstrip '/'}"
-      ctx = Context.new ctx
-      if routes.empty?
-        ctx << Error.new HTTP::Status::NOT_FOUND, "NotFound", "Route #{ctx.request.method} #{ctx.request.path} was not found on this API."
+      ctx.response.headers["Access-Control-Allow-Methods"] = "POST,DELETE,PUT,PATCH,GET,HEAD,OPTIONS"
+      ctx.response.headers["Access-Control-Max-Age"] = "3600"
+      ctx.response.headers["Access-Control-Allow-Credentials"] = "true"
+      ctx.response.headers["Access-Control-Expose-Headers"] = "X-Auth-Token"
+      ctx.response.headers["Access-Control-Allow-Headers"] = "Authorization,Content-Type,X-Auth-Token"
+      ctx.response.headers["Access-Control-Allow-Origin"] = "*"
+      
+      if ctx.request.method == "OPTIONS"
+        ctx.response.status_code = 204
       else
-        handler, path_parameters = routes.first
-        ctx.path_parameters = path_parameters
-        begin
-          handler.call ctx
-        rescue error : Error
-          ctx << error
-        rescue ex
-          Log.error exception: ex, &.emit "Exception handling route #{ctx.request.method}#{ctx.request.path.rstrip '/'}"
-          if ENV["ENV"].in? ["dev", "local"]
-            message = ex.message
-          else
-            message = "Something unexpected happened"
+        routes = @router.search "#{ctx.request.method}#{ctx.request.path.rstrip '/'}"
+        ctx = Context.new ctx
+        if routes.empty?
+          ctx << Error.new HTTP::Status::NOT_FOUND, "NotFound", "Route #{ctx.request.method} #{ctx.request.path} was not found on this API."
+        else
+          handler, path_parameters = routes.first
+          ctx.path_parameters = path_parameters
+          begin
+            handler.call ctx
+          rescue error : Error
+            ctx << error
+          rescue ex
+            Log.error exception: ex, &.emit "Exception handling route #{ctx.request.method}#{ctx.request.path.rstrip '/'}"
+            if ENV["ENV"].in? ["dev", "local"]
+              message = ex.message
+            else
+              message = "Something unexpected happened"
+            end
+            ctx << Error.new HTTP::Status::INTERNAL_SERVER_ERROR, "InternalServerError", message
           end
-          ctx << Error.new HTTP::Status::INTERNAL_SERVER_ERROR, "InternalServerError", message
         end
       end
       Log.info &.emit "TOOK: #{(Time.monotonic - t).total_milliseconds}ms"
@@ -134,7 +145,7 @@ class Api
   end
 
   def authenticate(ctx) : UUID
-    token = ctx.request.cookies["__Host-session"]?.try &.value
+    token = ctx.request.headers["X-Auth-Token"]?
     raise Error.new HTTP::Status::UNAUTHORIZED, "Not Logged In", "Not logged in" unless token
     hash = @cache.hgetall "session:#{token}"
     raise Error.new HTTP::Status::UNAUTHORIZED, "Not Logged In", "Not logged in" if hash.empty?

@@ -1,0 +1,17 @@
+https://{$DOMAIN} {
+  log {
+    level INFO
+    output file /data/hink-access.log {
+      roll_size 10MB
+      roll_keep 10
+    }
+  }
+
+  tls {$HTTPS_ACME_EMAIL}
+
+  encode zstd gzip
+
+  reverse_proxy unix//sockets/honk.sock {
+       header_up X-Real-IP {remote_host}
+  }
+}

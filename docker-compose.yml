@@ -14,7 +14,7 @@ services:
       pgsql:
         condition: service_healthy
     volumes:
-      - api_sockets:/sockets
+      - ./api_sockets:/sockets
   redis:
     image: redis:7.0-alpine
     command: >
@@ -31,16 +31,18 @@ services:
       - POSTGRES_USER
       - POSTGRES_DB
     volumes:
-     - db_data:/var/lib/postgresql/data
-  nginx:
-    image: nginx:1.25.1-alpine
+     - ./db_data:/var/lib/postgresql/data
+  reverseproxy:
+    image: caddy:2
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80  # Needed for the ACME HTTP-01 challenge.
+      - 443:443
+      - 443:443/udp # Needed for HTTP/3.
+    environment:
+      - DOMAIN
+      - HTTPS_ACME_EMAIL
     volumes:
-      - "./nginx.conf:/etc/nginx/nginx.conf:ro"
-      - "./certs:/etc/nginx/certs:ro"
-      - api_sockets:/sockets
-volumes:
-  api_sockets:
-  db_data:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy-config:/config
+      - ./caddy-data:/data
+      - ./api_sockets:/sockets

@@ -10,7 +10,7 @@
       "96": "icons/honk-96.png"
     },
 
-    "permissions": ["clipboardWrite", "storage", "webRequest", "https://*.*/*", "tabs"],
+    "permissions": ["clipboardWrite", "storage", "webRequest", "tabs"],
 
     "browser_action": {
         "default_icon": "icons/honk-32.png",

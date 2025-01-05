@@ -7,3 +7,7 @@ certs/
 .vscode
 extension/dist
 extension/node_modules
+/caddy-config/
+/caddy-data/
+/api_sockets/
+/db_data/

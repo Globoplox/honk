@@ -29,7 +29,7 @@ The extension will be found in `dist/honk.zip`.
 
 On firefox, it can be tested through temporary extension here: <a href="about:debugging#/runtime/this-firefox">about:debugging#/runtime/this-firefox</a>.  
 
-<video src="/readme_assets/overview.mp4" width="300" />
+/readme_assets/overview.mp4
 
 ## Testing locally
 

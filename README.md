@@ -27,13 +27,9 @@ Built and tested for firefox, but it might work on other browsers.
 go in the `extension` directory and run `npm i; npm run prod-build`.  
 The extension will be found in `dist/honk.zip`.  
 
-On firefox, it can be tested through temporary extension here: 
-A <a href="about:debugging#/runtime/this-firefox">about:debugging#/runtime/this-firefox</a>.  
-B [about:debugging#/runtime/this-firefox](about:debugging#/runtime/this-firefox)
-C about:debugging#/runtime/this-firefox
+On firefox, it can be tested through temporary extension here: *about:debugging#/runtime/this-firefox*
 
-
-https://github.com/Globoplox/honk/raw/refs/heads/master/readme_assets/overview.mp4
+https://github.com/user-attachments/assets/b4838237-0dcb-41e6-98d1-4a5907e631fe
 
 ## Testing locally
 

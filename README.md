@@ -27,9 +27,9 @@ Built and tested for firefox, but it might work on other browsers.
 go in the `extension` directory and run `npm i; npm run prod-build`.  
 The extension will be found in `dist/honk.zip`.  
 
-On firefox, it can be tested through [Temporary Extension](about:debugging#/runtime/this-firefox).  
+On firefox, it can be tested through temporary extension here: <a href="about:debugging#/runtime/this-firefox">about:debugging#/runtime/this-firefox</a>.  
 
-![Demo video](/readme_assets/overview.mp4)
+<video src="/readme_assets/overview.mp4" width="300" />
 
 ## Testing locally
 
